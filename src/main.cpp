@@ -1,11 +1,13 @@
 #include "main.h"
-//#include "gif-pros/gifclass.hpp"
+//#include "gif-pros/gifclass.hpp" // Commented out as we don't have an SD Card
 
 /////
 // For installation, upgrading, documentations, and tutorials, check out our website!
 // https://ez-robotics.github.io/EZ-Template/
 /////
 
+
+// Going to be unused until we get the brain
 [[maybe_unused]] void drawBiFlag() {
     // Clear the screen with black color
     pros::screen::set_pen(0x000000); // Set pen to black (hex format)
@@ -34,8 +36,8 @@
 // Chassis constructor
 ez::Drive chassis(
     // These are your drive motors, the first motor is used for sensing!
-    {1, 2, 3},     // Left Chassis Ports (negative port will reverse it!)
-    {-4, -5, -6},  // Right Chassis Ports (negative port will reverse it!)
+    {10, -20, 0},     // Left Chassis Ports (negative port will reverse it!)
+    {1, -11, 0},  // Right Chassis Ports (negative port will reverse it!)
 
     7,      // IMU Port
     4.125,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
@@ -53,7 +55,7 @@ void initialize() {
   
   // Testing Bi flag drawing for later
   //pros::lcd::initialize();
-  //drawBiFlag();
+ // drawBiFlag();
 
   pros::delay(500);  // Stop the user from doing anything while legacy ports configure
 
@@ -147,7 +149,8 @@ void opcontrol() {
   pros::motor_brake_mode_e_t driver_preference_brake = MOTOR_BRAKE_COAST;
 
   chassis.drive_brake_set(driver_preference_brake);
-
+  chassis.opcontrol_arcade_standard(ez::SINGLE); // Standard split arcade
+  
   while (true) {
     // PID Tuner
     // After you find values that you're happy with, you'll have to set them in auton.cpp

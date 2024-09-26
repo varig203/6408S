@@ -36,8 +36,8 @@
 // Chassis constructor
 ez::Drive chassis(
     // These are your drive motors, the first motor is used for sensing!
-    {10, -20, 0},     // Left Chassis Ports (negative port will reverse it!)
-    {1, -11, 0},  // Right Chassis Ports (negative port will reverse it!)
+    {1, -11, 0},     // Left Chassis Ports (negative port will reverse it!)
+    {10, -20, 0},  // Right Chassis Ports (negative port will reverse it!)
 
     7,      // IMU Port
     4.125,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
@@ -149,8 +149,7 @@ void opcontrol() {
   pros::motor_brake_mode_e_t driver_preference_brake = MOTOR_BRAKE_COAST;
 
   chassis.drive_brake_set(driver_preference_brake);
-  chassis.opcontrol_arcade_standard(ez::SINGLE); // Standard split arcade
-  
+
   while (true) {
     // PID Tuner
     // After you find values that you're happy with, you'll have to set them in auton.cpp
@@ -175,7 +174,7 @@ void opcontrol() {
     // chassis.opcontrol_arcade_standard(ez::SPLIT);   // Standard split arcade
     // chassis.opcontrol_arcade_standard(ez::SINGLE);  // Standard single arcade
     // chassis.opcontrol_arcade_flipped(ez::SPLIT);    // Flipped split arcade
-    // chassis.opcontrol_arcade_flipped(ez::SINGLE);   // Flipped single arcade
+    //chassis.opcontrol_arcade_flipped(ez::SINGLE);   // Flipped single arcade
 
     // . . .
     // Put more user control code here!

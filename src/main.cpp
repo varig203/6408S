@@ -7,41 +7,16 @@
 /////
 
 
-// Going to be unused until we get the brain
-[[maybe_unused]] void drawBiFlag() {
-    // Clear the screen with black color
-    pros::screen::set_pen(0x000000); // Set pen to black (hex format)
-    pros::screen::draw_rect(0, 0, 480, 240); // Clear screen
-
-    // Dimensions of the flag
-    const int flag_width = 480;
-    const int flag_height = 240;
-
-    // Heights of each stripe
-    const int stripe_height = flag_height / 3;
-    
-    // Draw the pink stripe
-    pros::screen::set_pen(0xD60270); // Set pen color to pink
-    pros::screen::draw_rect(0, 0, flag_width, stripe_height); // Draw pink stripe
-
-    // Draw the purple stripe
-    pros::screen::set_pen(0x9B4F96); // Set pen color to purple
-    pros::screen::draw_rect(0, stripe_height, flag_width, stripe_height); // Draw purple stripe
-
-    // Draw the blue stripe
-    pros::screen::set_pen(0x0038A8); // Set pen color to blue
-    pros::screen::draw_rect(0, 2 * stripe_height, flag_width, stripe_height); // Draw blue stripe
-}
-
 // Chassis constructor
 ez::Drive chassis(
     // These are your drive motors, the first motor is used for sensing!
-    {0, -11, 0},     // Left Chassis Ports (negative port will reverse it!)
-    {0, -20, 0},  // Right Chassis Ports (negative port will reverse it!)
+    {1, 11},     // Left Chassis Ports (negative port will reverse it!)
+    {9, -19},  // Right Chassis Ports (negative port will reverse it!)
 
-    7,      // IMU Port
+    20,      // IMU Port
     4.125,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
-    343);   // Wheel RPM
+    600,   // Wheel RPM
+    1.4); // Gear ratio
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -52,10 +27,6 @@ ez::Drive chassis(
 void initialize() {
   // Print our branding over your terminal :D
   ez::ez_template_print();
-  
-  // Testing Bi flag drawing for later
-  //pros::lcd::initialize();
- // drawBiFlag();
 
   pros::delay(500);  // Stop the user from doing anything while legacy ports configure
 
@@ -83,6 +54,10 @@ void initialize() {
       Auton("Interference\n\nAfter driving forward, robot performs differently if interfered or not.", interfered_example),
   });
 
+  //pros::Motor leftMotor1(11);
+  //pros::Motor leftMotor2(1);
+  //pros::Motor rightMotor1(9);
+  //pros::Motor rightMotor2(19);
   // Initialize chassis and auton selector
   chassis.initialize();
   ez::as::initialize();
@@ -171,8 +146,8 @@ void opcontrol() {
     }
 
     //chassis.opcontrol_tank();  // Tank control
-    chassis.opcontrol_arcade_standard(ez::SPLIT);   // Standard split arcade
-    // chassis.opcontrol_arcade_standard(ez::SINGLE);  // Standard single arcade
+    //chassis.opcontrol_arcade_standard(ez::SPLIT);   // Standard split arcade
+    chassis.opcontrol_arcade_standard(ez::SINGLE);  // Standard single arcade
     // chassis.opcontrol_arcade_flipped(ez::SPLIT);    // Flipped split arcade
     //chassis.opcontrol_arcade_flipped(ez::SINGLE);   // Flipped single arcade
 

@@ -2,8 +2,8 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 
 // Creating the Motor groups
-pros::MotorGroup left_motors({1, -11}, pros::MotorGearset::blue); // left motors on ports 1, 11
-pros::MotorGroup right_motors({9, -19}, pros::MotorGearset::blue); // right motors on ports 9, 19
+pros::MotorGroup left_motors({9, 19}, pros::MotorGearset::blue); // left motors on ports 1, 11
+pros::MotorGroup right_motors({-1, -11}, pros::MotorGearset::blue); // right motors on ports 9, 19
 
 // Creating the IMU port
 pros::Imu imu(20);
@@ -11,9 +11,9 @@ pros::Imu imu(20);
 // drivetrain settings
 lemlib::Drivetrain drivetrain(&left_motors, // left motor group
                              &right_motors, // right motor group
-                              10, // 10 inch track width
+                              16, // 10 inch track width
                               lemlib::Omniwheel::NEW_4, // using new 4" omnis
-                              500, // drivetrain rpm is 360
+                              600, // drivetrain rpm is 600
                               2 // horizontal drift is 2 (for now)
 );
 
@@ -69,23 +69,6 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
 						&throttle_curve
 );
 
-
-/**
- * A callback function for LLEMU's center button.
- *
- * When this callback is fired, it will toggle line 2 of the LCD text between
- * "I was pressed!" and nothing.
- */
-void on_center_button() {
-	static bool pressed = false;
-	pressed = !pressed;
-	if (pressed) {
-		pros::lcd::set_text(2, "I was pressed!");
-	} else {
-		pros::lcd::clear_line(2);
-	}
-}
-
 /**
  * Runs initialization code. This occurs as soon as the program is started.
  *
@@ -102,7 +85,12 @@ void initialize() {
             pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
             pros::lcd::print(1, "Y: %f", chassis.getPose().y); // y
             pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
-            // delay to save resources
+
+            // IMU readings
+            pros::lcd::print(3, "IMU Heading: %f", imu.get_heading()); // IMU heading
+            pros::lcd::print(4, "Gyro Rate: %f", imu.get_gyro_rate()); // Angular velocity
+            
+			// delay to save resources
             pros::delay(20);
         }
     });
@@ -143,6 +131,7 @@ void autonomous() {
     chassis.setPose(0, 0, 0);
     // turn to face heading 90 with a very long timeout
     chassis.turnToHeading(90, 100000);
+
 }
 
 /**
@@ -188,8 +177,8 @@ void opcontrol() {
         int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
         // move the robot
-        //chassis.arcade(leftY, rightX);
-        chassis.curvature(leftY, rightX);
+        chassis.arcade(leftY, -rightX);
+        //chassis.curvature(leftY, -rightX);
 
         // delay to save resources
         pros::delay(25);

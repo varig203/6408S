@@ -10,14 +10,18 @@ pros::Imu imu(20);
 
 // drivetrain settings
 lemlib::Drivetrain drivetrain(&left_motors, // left motor group
-                              &right_motors, // right motor group
+                             &right_motors, // right motor group
                               10, // 10 inch track width
                               lemlib::Omniwheel::NEW_4, // using new 4" omnis
                               500, // drivetrain rpm is 360
                               2 // horizontal drift is 2 (for now)
 );
 
-lemlib::OdomSensors sensors(&imu // inertial sensor
+lemlib::OdomSensors sensors(nullptr, // vertical tracking wheel 1, set to null
+                            nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
+                            nullptr, // horizontal tracking wheel 1
+                            nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
+                            &imu // inertial sensor
 );
 
 // lateral PID controller
@@ -89,7 +93,6 @@ void on_center_button() {
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
-void initialize() {
     pros::lcd::initialize(); // initialize brain screen
     chassis.calibrate(); // calibrate sensors
     // print position to brain screen
@@ -104,7 +107,7 @@ void initialize() {
         }
     });
 }
-}
+
 
 /**
  * Runs while the robot is in the disabled state of Field Management System or
@@ -135,7 +138,12 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {}
+void autonomous() {
+    // set position to x:0, y:0, heading:0
+    chassis.setPose(0, 0, 0);
+    // turn to face heading 90 with a very long timeout
+    chassis.turnToHeading(90, 100000);
+}
 
 /**
  * Runs the operator control code. This function will be started in its own task

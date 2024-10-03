@@ -69,6 +69,17 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
 						&throttle_curve
 );
 
+void on_center_button() {
+  static bool pressed = false;
+  pressed = !pressed;
+  if (pressed) {
+    pros::lcd::set_text(6, "Running Autonomous");
+    autonomous();
+  } else {
+    pros::lcd::clear_line(6);
+  }
+}
+
 /**
  * Runs initialization code. This occurs as soon as the program is started.
  *
@@ -77,6 +88,7 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
  */
 void initialize() {
     pros::lcd::initialize(); // initialize brain screen
+	pros::lcd::register_btn0_cb(on_center_button);
     chassis.calibrate(); // calibrate sensors
     // print position to brain screen
     pros::Task screen_task([&]() {

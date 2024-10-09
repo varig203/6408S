@@ -39,7 +39,7 @@ lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
 // angular PID controller
 lemlib::ControllerSettings angular_controller(2, // proportional gain (kP)
                                               0, // integral gain (kI)
-                                              10, // derivative gain (kD)
+                                              29, // derivative gain (kD)
                                               3, // anti windup
                                               1, // small error range, in degrees
                                               100, // small error range timeout, in milliseconds
@@ -73,7 +73,7 @@ void on_center_button() {
   static bool pressed = false;
   pressed = !pressed;
   if (pressed) {
-    pros::lcd::set_text(6, "Running Autonomous");
+    pros::lcd::set_text(7, "Running Autonomous!");
     autonomous();
   } else {
     pros::lcd::clear_line(6);
@@ -89,8 +89,10 @@ void on_center_button() {
 void initialize() {
     pros::lcd::initialize(); // initialize brain screen
 	pros::lcd::register_btn0_cb(on_center_button);
+    pros::adi::DigitalOut piston ('C'); // Initializing the solenoids
     chassis.calibrate(); // calibrate sensors
-    // print position to brain screen
+    
+    // print debugging to brain screen
     pros::Task screen_task([&]() {
         while (true) {
             // print robot location to the brain screen
@@ -101,8 +103,11 @@ void initialize() {
             // IMU readings
             pros::lcd::print(3, "IMU Heading: %f", imu.get_heading()); // IMU heading
             pros::lcd::print(4, "Gyro Rate: %f", imu.get_gyro_rate()); // Angular velocity
-            
-			// delay to save resources
+
+            // print measurements from the adi encoder
+            pros::lcd::print(5, "ADI Encoder: %i", vertical_encoder.get_value());
+			
+            // delay to save resources
             pros::delay(20);
         }
     });
@@ -139,6 +144,7 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {
+    pros::adi::DigitalOut piston ('C'); // Initializing the solenoids
     // set position to x:0, y:0, heading:0
     chassis.setPose(0, 0, 0);
     // turn to face heading 90 with a very long timeout
@@ -183,6 +189,11 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 void opcontrol() {
     // loop forever
+    pros::adi::DigitalOut pistonExtend('C'); // Initialize the solenoid for extending
+    pros::adi::DigitalOut pistonRetract('D'); // Initialize the solenoid for retracting
+    bool isExtended = false; // State variable to track piston status
+    int lastButtonState = 0; // To track the last button stat
+
     while (true) {
         // get left y and right x positions
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
@@ -191,6 +202,32 @@ void opcontrol() {
         // move the robot
         chassis.arcade(leftY, -rightX);
         //chassis.curvature(leftY, -rightX);
+        
+        int currentButtonState = controller.get_digital(DIGITAL_L1);
+
+        // Check for button press
+        if (currentButtonState && !lastButtonState) {
+            if (isExtended) {
+                // Retract the piston
+                pistonExtend.set_value(0);
+                pistonRetract.set_value(1);
+            } else {
+                // Extend the piston
+                pistonExtend.set_value(1);
+                pistonRetract.set_value(0);
+            }
+            // Toggle the state
+            isExtended = !isExtended;
+        }
+
+        // Update the last button state
+        lastButtonState = currentButtonState;
+
+        // If not actuated, ensure both solenoids are off
+        if (!isExtended) {
+            pistonExtend.set_value(0);
+            pistonRetract.set_value(0);
+        }
 
         // delay to save resources
         pros::delay(25);

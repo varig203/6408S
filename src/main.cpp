@@ -1,11 +1,15 @@
 #include "main.h"
 #include "lemlib/api.hpp" // IWYU pragma: keep
+#include "pros/rtos.hpp"
 
 // Creating the Motor groups
 pros::MotorGroup left_motors({9, 19}, pros::MotorGearset::blue); // left motors on ports 1, 11
 pros::MotorGroup right_motors({-1, -11}, pros::MotorGearset::blue); // right motors on ports 9, 19
+
+// setting up the vertical encoder
 pros::adi::Encoder vertical_encoder('A', 'B');
 lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_275, 1.5);
+
 // Creating the IMU port
 pros::Imu imu(20);
 
@@ -18,7 +22,7 @@ lemlib::Drivetrain drivetrain(&left_motors, // left motor group
                               2 // horizontal drift is 2 (for now)
 );
 
-lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1, set to null
+lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1
                             nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
                             nullptr, // horizontal tracking wheel 1
                             nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
@@ -70,6 +74,8 @@ lemlib::Chassis chassis(drivetrain, // drivetrain settings
 						&throttle_curve
 );
 
+
+
 void on_center_button() {
   static bool pressed = false;
   pressed = !pressed;
@@ -77,7 +83,7 @@ void on_center_button() {
     pros::lcd::set_text(7, "Running Autonomous!");
     autonomous();
   } else {
-    pros::lcd::clear_line(6);
+    pros::lcd::clear_line(7);
   }
 }
 
@@ -90,9 +96,8 @@ void on_center_button() {
 void initialize() {
     pros::lcd::initialize(); // initialize brain screen
 	pros::lcd::register_btn0_cb(on_center_button);
-    pros::adi::DigitalOut piston ('C'); // Initializing the solenoids
     chassis.calibrate(); // calibrate sensors
-    
+
     // print debugging to brain screen
     pros::Task screen_task([&]() {
         while (true) {
@@ -169,13 +174,34 @@ void autonomous() {
 
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
-void opcontrol() {
-    // loop forever
-    pros::adi::DigitalOut pistonExtend('C'); // Initialize the solenoid for extending
-    pros::adi::DigitalOut pistonRetract('D'); // Initialize the solenoid for retracting
+void opcontrol() {;
+    pros::adi::DigitalOut pistonExtend('A'); // Initialize the solenoid for extending
+    pros::adi::DigitalOut pistonRetract('B'); // Initialize the solenoid for retracting
+
     bool isExtended = false; // State variable to track piston status
     int lastButtonState = 0; // To track the last button stat
 
+    // Lambda threadding to allow the other functions to continue running while this one is doing its thing
+    pros::Task solenoidControl{[&isExtended, &lastButtonState, &pistonExtend, &pistonRetract] {
+        while (true) {
+            int currentButtonState = controller.get_digital(DIGITAL_L1);
+
+            // Check for button press
+            if (currentButtonState && !lastButtonState) {
+                // Toggle the piston state
+                isExtended = !isExtended;
+
+            // Set the solenoids accordingly
+            pistonExtend.set_value(isExtended ? 1 : 0);
+            pistonRetract.set_value(isExtended ? 0 : 1);
+
+            pros::delay(1000); // delay to prevent spamming the solenoids
+            }
+        lastButtonState = currentButtonState;
+        }
+    }};
+
+    // loop forever
     while (true) {
         // get left y and right x positions
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
@@ -184,34 +210,9 @@ void opcontrol() {
         // move the robot
         chassis.arcade(leftY, -rightX);
         //chassis.curvature(leftY, -rightX);
-        
-        int currentButtonState = controller.get_digital(DIGITAL_L1);
-
-        // Check for button press
-        if (currentButtonState && !lastButtonState) {
-            if (isExtended) {
-                // Retract the piston
-                pistonExtend.set_value(0);
-                pistonRetract.set_value(1);
-            } else {
-                // Extend the piston
-                pistonExtend.set_value(1);
-                pistonRetract.set_value(0);
-            }
-            // Toggle the state
-            isExtended = !isExtended;
-        }
-
-        // Update the last button state
-        lastButtonState = currentButtonState;
-
-        // If not actuated, ensure both solenoids are off
-        if (!isExtended) {
-            pistonExtend.set_value(0);
-            pistonRetract.set_value(0);
-        }
 
         // delay to save resources
         pros::delay(25);
+        
     }
 }

@@ -198,6 +198,7 @@ void opcontrol() {;
             pros::delay(1000); // delay to prevent spamming the solenoids
             }
         lastButtonState = currentButtonState;
+        pros::delay(20); // Saving resources
         }
     }};
 

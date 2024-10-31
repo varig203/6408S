@@ -3,8 +3,8 @@
 #include "pros/rtos.hpp"
 
 // Creating the Motor groups
-pros::MotorGroup left_motors({9, 19}, pros::MotorGearset::blue); // left motors on ports 1, 11
-pros::MotorGroup right_motors({-1, -11}, pros::MotorGearset::blue); // right motors on ports 9, 19
+pros::MotorGroup left_motors({10, 20}, pros::MotorGearset::blue); // left motors on ports 10,20
+pros::MotorGroup right_motors({-9, -18}, pros::MotorGearset::blue); // right motors on ports 9, 19
 
 // setting up the vertical encoder
 pros::adi::Encoder vertical_encoder('A', 'B');
@@ -150,7 +150,6 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {
-    pros::adi::DigitalOut piston ('C'); // Initializing the solenoids
     // set position to x:0, y:0, heading:0
     chassis.setPose(0, 0, 0);
     // turn to face heading 90 with a very long timeout
@@ -172,17 +171,16 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 
-pros::Controller controller(pros::E_CONTROLLER_MASTER);
-
 void opcontrol() {;
     pros::adi::DigitalOut pistonExtend('A'); // Initialize the solenoid for extending
     pros::adi::DigitalOut pistonRetract('B'); // Initialize the solenoid for retracting
-
+    pros::Controller controller(pros::E_CONTROLLER_MASTER); // Initialize controller
+    
     bool isExtended = false; // State variable to track piston status
     int lastButtonState = 0; // To track the last button stat
 
     // Lambda threadding to allow the other functions to continue running while this one is doing its thing
-    pros::Task solenoidControl{[&isExtended, &lastButtonState, &pistonExtend, &pistonRetract] {
+    pros::Task solenoidControl{[&isExtended, &lastButtonState, &pistonExtend, &pistonRetract, &controller] {
         while (true) {
             int currentButtonState = controller.get_digital(DIGITAL_L1);
 
@@ -195,7 +193,7 @@ void opcontrol() {;
             pistonExtend.set_value(isExtended ? 1 : 0);
             pistonRetract.set_value(isExtended ? 0 : 1);
 
-            pros::delay(1000); // delay to prevent spamming the solenoids
+            pros::delay(500); // delay to prevent spamming the solenoids
             }
         lastButtonState = currentButtonState;
         pros::delay(20); // Saving resources

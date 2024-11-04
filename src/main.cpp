@@ -3,15 +3,15 @@
 #include "pros/rtos.hpp"
 
 // Creating the Motor groups
-pros::MotorGroup left_motors({10, 20}, pros::MotorGearset::blue); // left motors on ports 10,20
-pros::MotorGroup right_motors({-9, -18}, pros::MotorGearset::blue); // right motors on ports 9, 19
+pros::MotorGroup left_motors({10, 20, 8}, pros::MotorGearset::blue); // left motors on ports 10,20,8
+pros::MotorGroup right_motors({-9, -18, 17}, pros::MotorGearset::blue); // right motors on ports 9,18,17
 
 // setting up the vertical encoder
-pros::adi::Encoder vertical_encoder('A', 'B');
+pros::adi::Encoder vertical_encoder('C', 'D');
 lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_275, 1.5);
 
 // Creating the IMU port
-pros::Imu imu(20);
+pros::Imu imu(15);
 
 // drivetrain settings
 lemlib::Drivetrain drivetrain(&left_motors, // left motor group
@@ -180,7 +180,7 @@ void opcontrol() {;
     int lastButtonState = 0; // To track the last button stat
 
     // Lambda threadding to allow the other functions to continue running while this one is doing its thing
-    pros::Task solenoidControl{[&isExtended, &lastButtonState, &pistonExtend, &pistonRetract, &controller] {
+    pros::Task solenoidControl{[&]() {
         while (true) {
             int currentButtonState = controller.get_digital(DIGITAL_L1);
 
@@ -208,7 +208,6 @@ void opcontrol() {;
 
         // move the robot
         chassis.arcade(leftY, -rightX);
-        //chassis.curvature(leftY, -rightX);
 
         // delay to save resources
         pros::delay(25);

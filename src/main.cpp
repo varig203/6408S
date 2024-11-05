@@ -2,9 +2,13 @@
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "pros/rtos.hpp"
 
+// Creating Vision Sensor
+#define VISION_PORT 16
+#define EXAMPLE_SIG 1
+
 // Creating the Motor groups
-pros::MotorGroup left_motors({10, 20, 8}, pros::MotorGearset::blue); // left motors on ports 10,20,8
-pros::MotorGroup right_motors({-9, -18, 17}, pros::MotorGearset::blue); // right motors on ports 9,18,17
+pros::MotorGroup left_motors({7, 9, 8}, pros::MotorGearset::blue); // left motors on ports 7,9,8
+pros::MotorGroup right_motors({-20, -18, -17}, pros::MotorGearset::blue); // right motors on ports 9,18,17
 
 // setting up the vertical encoder
 pros::adi::Encoder vertical_encoder('C', 'D');

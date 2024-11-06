@@ -178,7 +178,7 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 
-void opcontrol() {;
+void opcontrol() {
     pros::adi::DigitalOut pistonExtend('A'); // Initialize the solenoid for extending
     pros::adi::DigitalOut pistonRetract('B'); // Initialize the solenoid for retracting
     pros::Controller controller(pros::E_CONTROLLER_MASTER); // Initialize controller

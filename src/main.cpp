@@ -11,7 +11,7 @@
 pros::MotorGroup left_motors({7, 9, 8}, pros::MotorGearset::blue); // left motors on ports 7,9,8
 pros::MotorGroup right_motors({-20, -18, -17}, pros::MotorGearset::blue); // right motors on ports 9,18,17
 pros::Motor primary_intake(11, pros::MotorGearset::blue); // Primary Intake on port 11
-pros::Motor secondary_intake(10, pros::MotorGearset::green); // Secondary Intake on port 12
+pros::Motor secondary_intake(12, pros::MotorGearset::green); // Secondary Intake on port 12
 
 
 // setting up the vertical encoder
@@ -214,7 +214,12 @@ void opcontrol() {;
         while (true) {
             int currentButtonStateIntake = controller.get_digital(DIGITAL_R1);
 
-            primary_intake.move(currentButtonStateIntake);
+            // Checks for button press and runs the motor 
+            if (currentButtonStateIntake) { 
+                primary_intake.move_velocity(-360); // Runs the motor at 60% power to prevent loss of torque
+            } else {
+                primary_intake.move_velocity(0); // Stops the intake when button is unpressed.
+            }
             
             pros::delay(20); // Saving Rsources.
         }
@@ -227,7 +232,7 @@ void opcontrol() {;
         int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
         // move the robot
-        chassis.arcade(leftY, -rightX);
+        chassis.arcade(-leftY, rightX);
 
         // delay to save resources
         pros::delay(25);

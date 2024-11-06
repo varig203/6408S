@@ -1,5 +1,6 @@
 #include "main.h"
 #include "lemlib/api.hpp" // IWYU pragma: keep
+#include "pros/abstract_motor.hpp"
 #include "pros/rtos.hpp"
 
 // Creating Vision Sensor
@@ -9,6 +10,9 @@
 // Creating the Motor groups
 pros::MotorGroup left_motors({7, 9, 8}, pros::MotorGearset::blue); // left motors on ports 7,9,8
 pros::MotorGroup right_motors({-20, -18, -17}, pros::MotorGearset::blue); // right motors on ports 9,18,17
+pros::Motor primary_intake(11, pros::MotorGearset::blue); // Primary Intake on port 11
+pros::Motor secondary_intake(10, pros::MotorGearset::green); // Secondary Intake on port 12
+
 
 // setting up the vertical encoder
 pros::adi::Encoder vertical_encoder('C', 'D');
@@ -23,7 +27,7 @@ lemlib::Drivetrain drivetrain(&left_motors, // left motor group
                               16, // 10 inch track width
                               lemlib::Omniwheel::NEW_4, // using new 4" omnis
                               600, // drivetrain rpm is 600
-                              2 // horizontal drift is 2 (for now)
+                              0 // horizontal drift is 2 (for now)
 );
 
 lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1
@@ -180,26 +184,39 @@ void opcontrol() {;
     pros::Controller controller(pros::E_CONTROLLER_MASTER); // Initialize controller
     
     bool isExtended = false; // State variable to track piston status
-    int lastButtonState = 0; // To track the last button stat
+    int lastButtonStateMogo = 0; // To track the last button state Intake
+    int lastButtonStateIntake = 0; // Track last button state for Intake
+
 
     // Lambda threadding to allow the other functions to continue running while this one is doing its thing
-    pros::Task solenoidControl{[&]() {
+    pros::Task mogoControl{[&]() {
         while (true) {
-            int currentButtonState = controller.get_digital(DIGITAL_L1);
+            int currentButtonStateMogo = controller.get_digital(DIGITAL_L1);
 
             // Check for button press
-            if (currentButtonState && !lastButtonState) {
+            if (currentButtonStateMogo && !lastButtonStateMogo) {
                 // Toggle the piston state
                 isExtended = !isExtended;
 
-            // Set the solenoids accordingly
-            pistonExtend.set_value(isExtended ? 1 : 0);
-            pistonRetract.set_value(isExtended ? 0 : 1);
+                // Set the solenoids accordingly
+                pistonExtend.set_value(isExtended ? 1 : 0);
+                pistonRetract.set_value(isExtended ? 0 : 1);
 
-            pros::delay(500); // delay to prevent spamming the solenoids
+                pros::delay(500); // delay to prevent spamming the solenoids
             }
-        lastButtonState = currentButtonState;
+        lastButtonStateMogo = currentButtonStateMogo;
         pros::delay(20); // Saving resources
+        }
+    }};
+
+    // Another thread to allow for Intake to run seperate
+    pros::Task intakeControl{[&](){
+        while (true) {
+            int currentButtonStateIntake = controller.get_digital(DIGITAL_R1);
+
+            primary_intake.move(currentButtonStateIntake);
+            
+            pros::delay(20); // Saving Rsources.
         }
     }};
 

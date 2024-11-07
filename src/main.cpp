@@ -133,7 +133,14 @@ void initialize() {
  * the VEX Competition Switch, following either autonomous or opcontrol. When
  * the robot is enabled, this task will exit.
  */
-void disabled() {}
+void disabled() {
+    left_motors.move_velocity(0);
+    right_motors.move_velocity(0);
+    primary_intake.move_velocity(0);
+    secondary_intake.move_velocity(0);
+    pros::lcd::print(6, "Robot Disabled");
+}
+
 
 /**
  * Runs after initialize(), and before autonomous when connected to the Field
@@ -185,8 +192,8 @@ void opcontrol() {
     
     bool isExtended = false; // State variable to track piston status
     int lastButtonStateMogo = 0; // To track the last button state Intake
-    int lastButtonStateIntake = 0; // Track last button state for Intake
-
+    bool lastButtonStateIntake = false;
+    bool intakeRunning = false;
 
     // Lambda threadding to allow the other functions to continue running while this one is doing its thing
     pros::Task mogoControl{[&]() {
@@ -214,18 +221,27 @@ void opcontrol() {
         while (true) {
             int currentButtonStateIntake = controller.get_digital(DIGITAL_R1);
 
-            // Checks for button press and runs the motor 
-            if (currentButtonStateIntake) { 
-                primary_intake.move_velocity(-360); // Runs the motor at 60% power to prevent loss of torque
-            } else {
-                primary_intake.move_velocity(0); // Stops the intake when button is unpressed.
-            }
+            // Check for button press event (button pressed and released)
+            if (currentButtonStateIntake && !lastButtonStateIntake) {
+                // Toggle the intake motor state
+                intakeRunning = !intakeRunning;
             
-            pros::delay(20); // Saving Rsources.
+                // If intake is running, move the motor otherwise, stop it
+                if (intakeRunning) {
+                    primary_intake.move_velocity(-360);  // Runs the motor at 60% power
+                    secondary_intake.move_velocity(-100); // runs motor at 50% power
+                } else {
+                    primary_intake.move_velocity(0);  // Stops the motor
+                    secondary_intake.move_velocity(0);
+                }
+            }
+            // Update the previous button state
+            lastButtonStateIntake = currentButtonStateIntake;
+            pros::delay(20); // Saving rsoreces :3
         }
     }};
 
-    // loop forever
+    // Chassis loop
     while (true) {
         // get left y and right x positions
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);

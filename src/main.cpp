@@ -219,45 +219,38 @@ void opcontrol() {
         }
     }};
 
-    // Another thread to allow for Intake to run seperate
-    pros::Task intakeControl{[&](){
+    // Intake control task running on a separate thread
+    pros::Task intakeControl{[&]() {
+        // Function to control the intake motor
+        auto setIntakeMotorState = [&](bool isRunning, int direction) {
+            int speed = isRunning ? direction * intakeSpeed : 0;
+            primary_intake.move_velocity(speed);
+            secondary_intake.move_velocity(speed);
+        };
+
+        // Main loop for controlling the intake
         while (true) {
-            int currentButtonStateIntake = controller.get_digital(DIGITAL_R1); // R1 for normal direction
-            int currentButtonStateReverse = controller.get_digital(DIGITAL_R2);  // R2 for reverse
+            int currentButtonStateIntake = controller.get_digital(DIGITAL_R1);  // R1 for normal direction
+            int currentButtonStateReverse = controller.get_digital(DIGITAL_R2); // R2 for reverse
 
-            // Check for button press event
+            // Normal intake direction toggle
             if (currentButtonStateIntake && !lastButtonStateIntake) {
-                // Toggle the intake motor state
-                intakeRunning = !intakeRunning;
-            
-                // If intake is running, move the motor otherwise, stop it
-                if (intakeRunning) {
-                    primary_intake.move_velocity(intakeSpeed);  // Runs the motor at 60% power
-                    secondary_intake.move_velocity(intakeSpeed); // runs motor at 60% power
-                } else {
-                    primary_intake.move_velocity(0);  // Stops the motor
-                    secondary_intake.move_velocity(0);
-                }
+                intakeRunning = !intakeRunning;  // Toggle intake running state
+                setIntakeMotorState(intakeRunning, 1);  // Run in normal direction (1)
             }
 
-            // Basically the same as last one but the intake is reversed
+            // Reverse intake direction toggle
             if (currentButtonStateReverse && !lastButtonStateIntakeReverse) {
-                intakeRunning = !intakeRunning;
-
-                if (intakeRunning) {
-                    primary_intake.move_velocity(-intakeSpeed);
-                    primary_intake.move_velocity(-intakeSpeed);
-                } else {
-                    primary_intake.move_velocity(0);
-                    primary_intake.move_velocity(0);
-                }
-
+                intakeRunning = !intakeRunning;  // Toggle intake running state
+                setIntakeMotorState(intakeRunning, -1);  // Run in reverse direction (-1)
             }
 
-            // Update the previous button state
+            // Update the previous button state for next loop iteration
             lastButtonStateIntake = currentButtonStateIntake;
             lastButtonStateIntakeReverse = currentButtonStateReverse;
-            pros::delay(20); // Saving rsoreces :3
+
+            // Delay to save resources
+            pros::delay(20);
         }
     }};
 

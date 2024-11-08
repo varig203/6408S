@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "Skibidi",
+    "project_name": "Skibidi Sigma Balls",
     "target": "v5",
     "templates": {
       "LemLib": {
@@ -299,8 +299,9 @@
     },
     "upload_options": {
       "slot": 1,
-      "description": "6408S | Skibidi",
-      "icon": "pros"
+      "description": "6408S | Special Ed",
+      "icon": "pros",
+      "after": "run"
     },
     "use_early_access": false
   }

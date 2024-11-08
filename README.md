@@ -1,3 +1,3 @@
-# V5 6048S | Skibidi
+# V5 6048S | Special Ed
 
-This is the testing branch using LemLib over EZ-Template.
+Using test branch because I am too lazy to merge it with main

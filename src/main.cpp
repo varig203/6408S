@@ -127,18 +127,27 @@ void initialize() {
     });
 }
 
+// Helper function to set the brake mode of all motors 
+void setMotorBrakeMode(pros::motor_brake_mode_e mode) {
+    left_motors.set_brake_mode(mode);
+    right_motors.set_brake_mode(mode);
+    primary_intake.set_brake_mode(mode);
+    secondary_intake.set_brake_mode(mode);
+}
 
 /**
  * Runs while the robot is in the disabled state of Field Management System or
  * the VEX Competition Switch, following either autonomous or opcontrol. When
  * the robot is enabled, this task will exit.
  */
-void disabled() {
+void disabled() {    
+    // Disabling motors
     left_motors.move_velocity(0);
     right_motors.move_velocity(0);
     primary_intake.move_velocity(0);
     secondary_intake.move_velocity(0);
-    pros::lcd::print(6, "Robot Disabled");
+    
+    pros::lcd::print(6, "Robot Disabled"); 
 }
 
 
@@ -167,6 +176,9 @@ void competition_initialize() {}
 ASSET(test_txt);
  
 void autonomous() {
+    // Changing brake mode
+    setMotorBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
+
     chassis.setPose(0,0,0);
     chassis.follow(test_txt,15,2000);
 }
@@ -190,6 +202,9 @@ void opcontrol() {
     pros::adi::DigitalOut pistonRetract('B'); // Initialize the solenoid for retracting
     pros::Controller controller(pros::E_CONTROLLER_MASTER); // Initialize controller
     
+    //changing motor brake mode
+    setMotorBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+
     // Initializing vars
     bool isExtended = false; // State variable to track piston status
     int lastButtonStateMogo = 0; // To track the last button state Intake

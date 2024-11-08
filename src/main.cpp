@@ -11,7 +11,7 @@
 pros::MotorGroup left_motors({7, 9, 8}, pros::MotorGearset::blue); // left motors on ports 7,9,8
 pros::MotorGroup right_motors({-20, -18, -17}, pros::MotorGearset::blue); // right motors on ports 9,18,17
 pros::Motor primary_intake(11, pros::MotorGearset::blue); // Primary Intake on port 11
-pros::Motor secondary_intake(12, pros::MotorGearset::green); // Secondary Intake on port 12
+pros::Motor secondary_intake(12, pros::MotorGearset::blue); // Secondary Intake on port 12
 
 
 // setting up the vertical encoder
@@ -190,10 +190,14 @@ void opcontrol() {
     pros::adi::DigitalOut pistonRetract('B'); // Initialize the solenoid for retracting
     pros::Controller controller(pros::E_CONTROLLER_MASTER); // Initialize controller
     
+    // Initializing vars
     bool isExtended = false; // State variable to track piston status
     int lastButtonStateMogo = 0; // To track the last button state Intake
     bool lastButtonStateIntake = false;
+    bool lastButtonStateIntakeReverse = false;
     bool intakeRunning = false;
+    int intakeSpeed = -360;
+    //bool reverseDirection = false;
 
     // Lambda threadding to allow the other functions to continue running while this one is doing its thing
     pros::Task mogoControl{[&]() {
@@ -205,7 +209,7 @@ void opcontrol() {
                 // Toggle the piston state
                 isExtended = !isExtended;
 
-                // Set the solenoids accordingly
+                // Set the solenoid thingys
                 pistonExtend.set_value(isExtended ? 1 : 0);
                 pistonRetract.set_value(isExtended ? 0 : 1);
 
@@ -218,25 +222,43 @@ void opcontrol() {
 
     // Another thread to allow for Intake to run seperate
     pros::Task intakeControl{[&](){
+        bool reverseDirection = false;
         while (true) {
-            int currentButtonStateIntake = controller.get_digital(DIGITAL_R1);
+            int currentButtonStateIntake = controller.get_digital(DIGITAL_R1); // R1 for normal direction
+            int currentButtonStateReverse = controller.get_digital(DIGITAL_R2);  // R2 for reverse
 
-            // Check for button press event (button pressed and released)
+            // Check for button press event
             if (currentButtonStateIntake && !lastButtonStateIntake) {
                 // Toggle the intake motor state
                 intakeRunning = !intakeRunning;
             
                 // If intake is running, move the motor otherwise, stop it
                 if (intakeRunning) {
-                    primary_intake.move_velocity(-360);  // Runs the motor at 60% power
-                    secondary_intake.move_velocity(-100); // runs motor at 50% power
+                    int speed = reverseDirection ? -intakeSpeed : intakeSpeed;
+                    primary_intake.move_velocity(speed);  // Runs the motor at 60% power
+                    secondary_intake.move_velocity(speed); // runs motor at 60% power
                 } else {
                     primary_intake.move_velocity(0);  // Stops the motor
                     secondary_intake.move_velocity(0);
                 }
             }
+
+            // Check for button press on R2 to toggle direction
+            if (currentButtonStateReverse && !lastButtonStateIntakeReverse) {
+                // Toggle the direction
+                reverseDirection = !reverseDirection;
+
+                // Update the motor direction based on the reverseDirection flag
+                if (intakeRunning) {  // Only change direction if the intake is running
+                    int speed = reverseDirection ? -intakeSpeed : intakeSpeed;
+                    primary_intake.move_velocity(speed);  // Change motor direction
+                    secondary_intake.move_velocity(speed); // Change motor direction
+            }
+        }
+
             // Update the previous button state
             lastButtonStateIntake = currentButtonStateIntake;
+            lastButtonStateIntakeReverse = currentButtonStateReverse;
             pros::delay(20); // Saving rsoreces :3
         }
     }};
@@ -248,7 +270,7 @@ void opcontrol() {
         int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
         // move the robot
-        chassis.arcade(-leftY, rightX);
+        chassis.arcade(leftY, -rightX);
 
         // delay to save resources
         pros::delay(25);

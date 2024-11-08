@@ -197,7 +197,6 @@ void opcontrol() {
     bool lastButtonStateIntakeReverse = false;
     bool intakeRunning = false;
     int intakeSpeed = -360;
-    //bool reverseDirection = false;
 
     // Lambda threadding to allow the other functions to continue running while this one is doing its thing
     pros::Task mogoControl{[&]() {
@@ -222,7 +221,6 @@ void opcontrol() {
 
     // Another thread to allow for Intake to run seperate
     pros::Task intakeControl{[&](){
-        bool reverseDirection = false;
         while (true) {
             int currentButtonStateIntake = controller.get_digital(DIGITAL_R1); // R1 for normal direction
             int currentButtonStateReverse = controller.get_digital(DIGITAL_R2);  // R2 for reverse
@@ -234,27 +232,27 @@ void opcontrol() {
             
                 // If intake is running, move the motor otherwise, stop it
                 if (intakeRunning) {
-                    int speed = reverseDirection ? -intakeSpeed : intakeSpeed;
-                    primary_intake.move_velocity(speed);  // Runs the motor at 60% power
-                    secondary_intake.move_velocity(speed); // runs motor at 60% power
+                    primary_intake.move_velocity(intakeSpeed);  // Runs the motor at 60% power
+                    secondary_intake.move_velocity(intakeSpeed); // runs motor at 60% power
                 } else {
                     primary_intake.move_velocity(0);  // Stops the motor
                     secondary_intake.move_velocity(0);
                 }
             }
 
-            // Check for button press on R2 to toggle direction
+            // Basically the same as last one but the intake is reversed
             if (currentButtonStateReverse && !lastButtonStateIntakeReverse) {
-                // Toggle the direction
-                reverseDirection = !reverseDirection;
+                intakeRunning = !intakeRunning;
 
-                // Update the motor direction based on the reverseDirection flag
-                if (intakeRunning) {  // Only change direction if the intake is running
-                    int speed = reverseDirection ? -intakeSpeed : intakeSpeed;
-                    primary_intake.move_velocity(speed);  // Change motor direction
-                    secondary_intake.move_velocity(speed); // Change motor direction
+                if (intakeRunning) {
+                    primary_intake.move_velocity(-intakeSpeed);
+                    primary_intake.move_velocity(-intakeSpeed);
+                } else {
+                    primary_intake.move_velocity(0);
+                    primary_intake.move_velocity(0);
+                }
+
             }
-        }
 
             // Update the previous button state
             lastButtonStateIntake = currentButtonStateIntake;

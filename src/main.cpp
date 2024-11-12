@@ -251,13 +251,13 @@ void opcontrol() {
             // Normal intake direction toggle
             if (currentButtonStateIntake && !lastButtonStateIntake) {
                 intakeRunning = !intakeRunning;  // Toggle intake running state
-                setIntakeMotorState(intakeRunning, 1);  // Run in normal direction (1)
+                setIntakeMotorState(intakeRunning, -1);  // Run in normal direction (-1)
             }
 
             // Reverse intake direction toggle
             if (currentButtonStateReverse && !lastButtonStateIntakeReverse) {
                 intakeRunning = !intakeRunning;  // Toggle intake running state
-                setIntakeMotorState(intakeRunning, -1);  // Run in reverse direction (-1)
+                setIntakeMotorState(intakeRunning, 1);  // Run in reverse direction (1)
             }
 
             // Update the previous button state for next loop iteration
@@ -269,17 +269,18 @@ void opcontrol() {
         }
     }};
 
-    // Chassis loop
-    while (true) {
-        // get left y and right x positions
-        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+    pros::Task chassisTask{[&]() {
+        // Chassis loop
+        while (true) {
+            // get left y and right x positions
+            int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+            int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
-        // move the robot
-        chassis.arcade(leftY, -rightX);
+            // move the robot
+            chassis.arcade(leftY, -rightX);
 
-        // delay to save resources
-        pros::delay(25);
-        
-    }
+            // delay to save resources
+            pros::delay(20);
+            }
+    }};
 }

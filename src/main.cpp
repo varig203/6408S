@@ -3,23 +3,19 @@
 #include "pros/abstract_motor.hpp"
 #include "pros/rtos.hpp"
 
-// Creating Vision Sensor
-#define VISION_PORT 16
-#define EXAMPLE_SIG 1
-
 // Creating the Motor groups
 pros::MotorGroup left_motors({7, 9, 8}, pros::MotorGearset::blue); // left motors on ports 7,9,8
 pros::MotorGroup right_motors({-20, -18, -17}, pros::MotorGearset::blue); // right motors on ports 9,18,17
 pros::Motor primary_intake(11, pros::MotorGearset::blue); // Primary Intake on port 11
 pros::Motor secondary_intake(12, pros::MotorGearset::blue); // Secondary Intake on port 12
 
+// Creating Sensors
+pros::Optical optical_sensor(15); // Optical Sensor for donuts
+pros::Imu imu(15); // IMU
 
-// setting up the vertical encoder
-pros::adi::Encoder vertical_encoder('C', 'D');
-lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_275, 1.5);
-
-// Creating the IMU port
-pros::Imu imu(15);
+// setting up the vertical Rotation Sensor
+pros::Rotation vertical_encoder(14);
+lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_275, -2.5);
 
 // drivetrain settings
 lemlib::Drivetrain drivetrain(&left_motors, // left motor group
@@ -118,8 +114,8 @@ void initialize() {
             pros::lcd::print(3, "IMU Heading: %f", imu.get_heading()); // IMU heading
             pros::lcd::print(4, "Gyro Rate: %f", imu.get_gyro_rate()); // Angular velocity
 
-            // print measurements from the adi encoder
-            pros::lcd::print(5, "ADI Encoder: %i", vertical_encoder.get_value());
+            // print measurements from the rVertical Encoder
+            pros::lcd::print(1, "Vertical Encoder: %i", vertical_encoder.get_position());
 			
             // delay to save resources
             pros::delay(20);
@@ -201,7 +197,7 @@ void opcontrol() {
     pros::adi::DigitalOut pistonExtend('A'); // Initialize the solenoid for extending
     pros::adi::DigitalOut pistonRetract('B'); // Initialize the solenoid for retracting
     pros::Controller controller(pros::E_CONTROLLER_MASTER); // Initialize controller
-    
+
     //changing motor brake mode
     setMotorBrakeMode(pros::E_MOTOR_BRAKE_COAST);
 
@@ -236,9 +232,19 @@ void opcontrol() {
 
     // Intake control task running on a separate thread
     pros::Task intakeControl{[&]() {
+        // Setting required Sensors up
+        optical_sensor.set_led_pwm(75);
+        bool redDetected = false;
+        bool blueDetected = false;
+
+        // Variable to control intake speed (1 = higher speed, 0 = normal speed)
+        int intakeSpeedControl = 0; // This value changes the speed
+        int normalSpeed = 360; // 60% power
+        int flingSpeed = 600; // 100% power
+
         // Function to control the intake motor
         auto setIntakeMotorState = [&](bool isRunning, int direction) {
-            int speed = isRunning ? direction * intakeSpeed : 0;
+            int speed = isRunning ? (intakeSpeedControl == 1 ? flingSpeed : normalSpeed) * direction : 0;
             primary_intake.move_velocity(speed);
             secondary_intake.move_velocity(speed);
         };

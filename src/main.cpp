@@ -165,7 +165,7 @@ void competition_initialize() {}
  * mode. Alternatively, this function may be called in initialize or opcontrol
  * for non-competition testing purposes.
  *
- * If the robot is disabled or communications is lost, the autonomous task
+ * If the robot is disabled or communications is lost, the autonomous task||I 
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
@@ -193,14 +193,11 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 
+pros::adi::DigitalOut pistonExtend('A'); // Initialize the solenoid for extending
+pros::adi::DigitalOut pistonRetract('B'); // Initialize the solenoid for retracting
+pros::Controller controller(pros::E_CONTROLLER_MASTER); // Initialize controller
+
 void opcontrol() {
-    pros::adi::DigitalOut pistonExtend('A'); // Initialize the solenoid for extending
-    pros::adi::DigitalOut pistonRetract('B'); // Initialize the solenoid for retracting
-    pros::Controller controller(pros::E_CONTROLLER_MASTER); // Initialize controller
-
-    //changing motor brake mode
-    setMotorBrakeMode(pros::E_MOTOR_BRAKE_COAST);
-
     // Initializing vars
     bool isExtended = false; // State variable to track piston status
     int lastButtonStateMogo = 0; // To track the last button state Intake
@@ -212,7 +209,7 @@ void opcontrol() {
     // Lambda threadding to allow the other functions to continue running while this one is doing its thing
     pros::Task mogoControl{[&]() {
         while (true) {
-            int currentButtonStateMogo = controller.get_digital(DIGITAL_L1);
+            int currentButtonStateMogo = controller.get_digital_new_press(DIGITAL_L1);
 
             // Check for button press
             if (currentButtonStateMogo && !lastButtonStateMogo) {
@@ -232,10 +229,6 @@ void opcontrol() {
 
     // Intake control task running on a separate thread
     pros::Task intakeControl{[&]() {
-        // Setting required Sensors up
-        optical_sensor.set_led_pwm(75);
-        bool redDetected = false;
-        bool blueDetected = false;
 
         // Variable to control intake speed (1 = higher speed, 0 = normal speed)
         int intakeSpeedControl = 0; // This value changes the speed
@@ -245,14 +238,14 @@ void opcontrol() {
         // Function to control the intake motor
         auto setIntakeMotorState = [&](bool isRunning, int direction) {
             int speed = isRunning ? (intakeSpeedControl == 1 ? flingSpeed : normalSpeed) * direction : 0;
-            primary_intake.move_velocity(speed);
+            primary_intake.move_velocity(-speed);
             secondary_intake.move_velocity(speed);
         };
 
         // Main loop for controlling the intake
         while (true) {
-            int currentButtonStateIntake = controller.get_digital(DIGITAL_R1);  // R1 for normal direction
-            int currentButtonStateReverse = controller.get_digital(DIGITAL_R2); // R2 for reverse
+            int currentButtonStateIntake = controller.get_digital_new_press(DIGITAL_R1);  // R1 for normal direction
+            int currentButtonStateReverse = controller.get_digital_new_press(DIGITAL_R2); // R2 for reverse
 
             // Normal intake direction toggle
             if (currentButtonStateIntake && !lastButtonStateIntake) {
@@ -287,6 +280,6 @@ void opcontrol() {
 
             // delay to save resources
             pros::delay(20);
-            }
+        }
     }};
 }

@@ -197,7 +197,7 @@ pros::adi::DigitalOut pistonExtend('A'); // Initialize the solenoid for extendin
 pros::adi::DigitalOut pistonRetract('B'); // Initialize the solenoid for retracting
 pros::Controller controller(pros::E_CONTROLLER_MASTER); // Initialize controller
 
-void opcontrol() {
+void opcontrol() {;
     // Initializing vars
     bool isExtended = false; // State variable to track piston status
     int lastButtonStateMogo = 0; // To track the last button state Intake
@@ -209,7 +209,7 @@ void opcontrol() {
     // Lambda threadding to allow the other functions to continue running while this one is doing its thing
     pros::Task mogoControl{[&]() {
         while (true) {
-            int currentButtonStateMogo = controller.get_digital_new_press(DIGITAL_L1);
+            int currentButtonStateMogo = controller.get_digital(DIGITAL_L1);
 
             // Check for button press
             if (currentButtonStateMogo && !lastButtonStateMogo) {
@@ -244,8 +244,8 @@ void opcontrol() {
 
         // Main loop for controlling the intake
         while (true) {
-            int currentButtonStateIntake = controller.get_digital_new_press(DIGITAL_R1);  // R1 for normal direction
-            int currentButtonStateReverse = controller.get_digital_new_press(DIGITAL_R2); // R2 for reverse
+            int currentButtonStateIntake = controller.get_digital(DIGITAL_R1);  // R1 for normal direction
+            int currentButtonStateReverse = controller.get_digital(DIGITAL_R2); // R2 for reverse
 
             // Normal intake direction toggle
             if (currentButtonStateIntake && !lastButtonStateIntake) {

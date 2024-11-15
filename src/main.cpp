@@ -11,7 +11,7 @@ pros::Motor secondary_intake(12, pros::MotorGearset::blue); // Secondary Intake 
 
 // Creating Sensors
 pros::Optical optical_sensor(15); // Optical Sensor for donuts
-pros::Imu imu(15); // IMU
+pros::Imu imu(19); // IMU
 
 // setting up the vertical Rotation Sensor
 pros::Rotation vertical_encoder(14);
@@ -115,7 +115,8 @@ void initialize() {
             pros::lcd::print(4, "Gyro Rate: %f", imu.get_gyro_rate()); // Angular velocity
 
             // print measurements from the rVertical Encoder
-            pros::lcd::print(1, "Vertical Encoder: %i", vertical_encoder.get_position());
+            pros::lcd::print(5, "Vertical Encoder: %i", vertical_encoder.get_position());
+            //pros::lcd::print(6,"works");
 			
             // delay to save resources
             pros::delay(20);
@@ -169,16 +170,26 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-ASSET(test_txt);
+ASSET(test_txt); // Auto test
+ASSET(test2_txt);
  
 void autonomous() {
     // Changing brake mode
     setMotorBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
 
     chassis.setPose(0,0,0);
-    chassis.follow(test_txt,15,2000);
+    //chassis.follow(test_txt,15,2000);
+    chassis.moveToPose(6, 0, 0, 2000);
+    
+    while (chassis.isInMotion()){
+        pros::delay(20);
+    }
+    chassis.cancelAllMotions();
 }
 
+pros::adi::DigitalOut pistonExtend('B'); // Initialize the solenoid for extending
+pros::adi::DigitalOut pistonRetract('A'); // Initialize the solenoid for retracting
+pros::Controller controller(pros::E_CONTROLLER_MASTER); // Initialize controller
 /**
  * Runs the operator control code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -193,18 +204,12 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 
-pros::adi::DigitalOut pistonExtend('A'); // Initialize the solenoid for extending
-pros::adi::DigitalOut pistonRetract('B'); // Initialize the solenoid for retracting
-pros::Controller controller(pros::E_CONTROLLER_MASTER); // Initialize controller
-
-void opcontrol() {;
+void opcontrol() {; // the semi colon for some reason lets it work DO NOT REMOVE
     // Initializing vars
     bool isExtended = false; // State variable to track piston status
     int lastButtonStateMogo = 0; // To track the last button state Intake
-    bool lastButtonStateIntake = false;
-    bool lastButtonStateIntakeReverse = false;
     bool intakeRunning = false;
-    int intakeSpeed = -360;
+    bool intakeRunningReverse = false;
 
     // Lambda threadding to allow the other functions to continue running while this one is doing its thing
     pros::Task mogoControl{[&]() {
@@ -213,12 +218,19 @@ void opcontrol() {;
 
             // Check for button press
             if (currentButtonStateMogo && !lastButtonStateMogo) {
-                // Toggle the piston state
-                isExtended = !isExtended;
+                isExtended = !isExtended; // Toggle the piston state
 
-                // Set the solenoid thingys
-                pistonExtend.set_value(isExtended ? 1 : 0);
-                pistonRetract.set_value(isExtended ? 0 : 1);
+                if (isExtended) {
+                    pistonRetract.set_value(0);
+                    pros::delay(100);
+                    pistonExtend.set_value(1);
+                    isExtended = true;
+                } else {
+                    pistonExtend.set_value(0);
+                    pros::delay(100);
+                    pistonRetract.set_value(1);
+                    isExtended = false;
+                }
 
                 pros::delay(500); // delay to prevent spamming the solenoids
             }
@@ -230,41 +242,51 @@ void opcontrol() {;
     // Intake control task running on a separate thread
     pros::Task intakeControl{[&]() {
 
-        // Variable to control intake speed (1 = higher speed, 0 = normal speed)
-        int intakeSpeedControl = 0; // This value changes the speed
-        int normalSpeed = 360; // 60% power
-        int flingSpeed = 600; // 100% power
-
-        // Function to control the intake motor
-        auto setIntakeMotorState = [&](bool isRunning, int direction) {
-            int speed = isRunning ? (intakeSpeedControl == 1 ? flingSpeed : normalSpeed) * direction : 0;
-            primary_intake.move_velocity(-speed);
-            secondary_intake.move_velocity(speed);
-        };
+        bool lastButtonStateIntake = false;
+        bool lastButtonStateIntakeReverse = false;
 
         // Main loop for controlling the intake
         while (true) {
-            int currentButtonStateIntake = controller.get_digital(DIGITAL_R1);  // R1 for normal direction
-            int currentButtonStateReverse = controller.get_digital(DIGITAL_R2); // R2 for reverse
+            int currentButtonStateIntake = controller.get_digital_new_press(DIGITAL_R1);  // R1 for normal direction
+            int currentButtonStateReverse = controller.get_digital_new_press(DIGITAL_R2); // R2 for reverse
 
-            // Normal intake direction toggle
             if (currentButtonStateIntake && !lastButtonStateIntake) {
-                intakeRunning = !intakeRunning;  // Toggle intake running state
-                setIntakeMotorState(intakeRunning, -1);  // Run in normal direction (-1)
+                // Toggle the intake motor state
+                intakeRunning = !intakeRunning;
+            
+                // If intake is running, move the motor otherwise, stop it
+                if (intakeRunning) {
+                    primary_intake.move_velocity(-360);  // Runs the motor at 60% power
+                    secondary_intake.move_velocity(-360); // runs motor at 60% power
+                    intakeRunning = true;
+                } else {
+                    primary_intake.move_velocity(0);  // Stops the motor
+                    secondary_intake.move_velocity(0);
+                    intakeRunning = false;
+                }
             }
 
-            // Reverse intake direction toggle
+            // Basically the same as last one but the intake is reversed
             if (currentButtonStateReverse && !lastButtonStateIntakeReverse) {
-                intakeRunning = !intakeRunning;  // Toggle intake running state
-                setIntakeMotorState(intakeRunning, 1);  // Run in reverse direction (1)
+                intakeRunningReverse = !intakeRunningReverse;
+
+                if (intakeRunningReverse) {
+                    primary_intake.move_velocity(360);
+                    secondary_intake.move_velocity(360);
+                    intakeRunning = true;
+                } else {
+                    primary_intake.move_velocity(0);
+                    secondary_intake.move_velocity(0);
+                    intakeRunning = false;
+                }
+
             }
 
             // Update the previous button state for next loop iteration
             lastButtonStateIntake = currentButtonStateIntake;
             lastButtonStateIntakeReverse = currentButtonStateReverse;
 
-            // Delay to save resources
-            pros::delay(20);
+            pros::delay(20); // Delay to save resources :3
         }
     }};
 

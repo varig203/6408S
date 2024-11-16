@@ -1,6 +1,7 @@
 #include "main.h"
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "pros/abstract_motor.hpp"
+#include "pros/motors.h"
 #include "pros/rtos.hpp"
 
 // Creating the Motor groups
@@ -84,10 +85,10 @@ void on_center_button() {
   static bool pressed = false;
   pressed = !pressed;
   if (pressed) {
-    pros::lcd::set_text(7, "Running Autonomous!");
+    pros::lcd::set_text(6, "Running Autonomous!");
     autonomous();
   } else {
-    pros::lcd::clear_line(7);
+    pros::lcd::clear_line(6);
   }
 }
 
@@ -175,16 +176,17 @@ ASSET(test2_txt);
  
 void autonomous() {
     // Changing brake mode
-    setMotorBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
+    setMotorBrakeMode(pros::E_MOTOR_BRAKE_COAST);
 
     chassis.setPose(0,0,0);
     //chassis.follow(test_txt,15,2000);
-    chassis.moveToPose(6, 0, 0, 2000);
-    
-    while (chassis.isInMotion()){
-        pros::delay(20);
-    }
-    chassis.cancelAllMotions();
+    pros::lcd::print(7, "Starting motors");
+    left_motors.move_velocity(600);
+    right_motors.move_velocity(600);
+    pros::delay(1000);
+    left_motors.move_velocity(0);
+    right_motors.move_velocity(0);
+    pros::lcd::print(7, "Stopping motors");
 }
 
 pros::adi::DigitalOut pistonExtend('B'); // Initialize the solenoid for extending
@@ -256,7 +258,7 @@ void opcontrol() {; // the semi colon for some reason lets it work DO NOT REMOVE
             
                 // If intake is running, move the motor otherwise, stop it
                 if (intakeRunning) {
-                    primary_intake.move_velocity(-360);  // Runs the motor at 60% power
+                    primary_intake.move_velocity(-400);  // Runs the motor at 60% power
                     secondary_intake.move_velocity(-360); // runs motor at 60% power
                     intakeRunning = true;
                 } else {
@@ -271,7 +273,7 @@ void opcontrol() {; // the semi colon for some reason lets it work DO NOT REMOVE
                 intakeRunningReverse = !intakeRunningReverse;
 
                 if (intakeRunningReverse) {
-                    primary_intake.move_velocity(360);
+                    primary_intake.move_velocity(400);
                     secondary_intake.move_velocity(360);
                     intakeRunning = true;
                 } else {

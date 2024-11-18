@@ -125,14 +125,6 @@ void initialize() {
     });
 }
 
-// Helper function to set the brake mode of all motors 
-void setMotorBrakeMode(pros::motor_brake_mode_e mode) {
-    left_motors.set_brake_mode(mode);
-    right_motors.set_brake_mode(mode);
-    primary_intake.set_brake_mode(mode);
-    secondary_intake.set_brake_mode(mode);
-}
-
 /**
  * Runs while the robot is in the disabled state of Field Management System or
  * the VEX Competition Switch, following either autonomous or opcontrol. When
@@ -140,10 +132,10 @@ void setMotorBrakeMode(pros::motor_brake_mode_e mode) {
  */
 void disabled() {    
     // Disabling motors
-    left_motors.move_velocity(0);
-    right_motors.move_velocity(0);
-    primary_intake.move_velocity(0);
-    secondary_intake.move_velocity(0);
+    //left_motors.move_velocity(0);
+    //right_motors.move_velocity(0);
+    //primary_intake.move_velocity(0);
+    //secondary_intake.move_velocity(0);
     
     pros::lcd::print(6, "Robot Disabled"); 
 }
@@ -175,18 +167,13 @@ ASSET(test_txt); // Auto test
 ASSET(test2_txt);
  
 void autonomous() {
-    // Changing brake mode
-    setMotorBrakeMode(pros::E_MOTOR_BRAKE_COAST);
-
+    // Simple straight line
+    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
     chassis.setPose(0,0,0);
-    //chassis.follow(test_txt,15,2000);
-    pros::lcd::print(7, "Starting motors");
-    left_motors.move_velocity(600);
-    right_motors.move_velocity(600);
-    pros::delay(1000);
-    left_motors.move_velocity(0);
-    right_motors.move_velocity(0);
-    pros::lcd::print(7, "Stopping motors");
+    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
+    chassis.follow(test_txt,20,2000);
+    pros::delay(600);
+    chassis.cancelAllMotions();
 }
 
 pros::adi::DigitalOut pistonExtend('B'); // Initialize the solenoid for extending
@@ -295,6 +282,7 @@ void opcontrol() {; // the semi colon for some reason lets it work DO NOT REMOVE
     pros::Task chassisTask{[&]() {
         // Chassis loop
         while (true) {
+            chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
             // get left y and right x positions
             int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
             int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);

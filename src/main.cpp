@@ -10,6 +10,11 @@ pros::MotorGroup right_motors({-20, -18, -17}, pros::MotorGearset::blue); // rig
 pros::Motor primary_intake(11, pros::MotorGearset::blue); // Primary Intake on port 11
 pros::Motor secondary_intake(12, pros::MotorGearset::blue); // Secondary Intake on port 12
 
+// Creating controller/Pistons
+pros::Controller controller(pros::E_CONTROLLER_MASTER); // Initialize controller
+pros::adi::DigitalOut pistonExtend('B'); // Initialize the solenoid for extending
+pros::adi::DigitalOut pistonRetract('A'); // Initialize the solenoid for retracting
+
 // Creating Sensors
 pros::Optical optical_sensor(15); // Optical Sensor for donuts
 pros::Imu imu(19); // IMU
@@ -117,12 +122,19 @@ void initialize() {
 
             // print measurements from the rVertical Encoder
             pros::lcd::print(5, "Vertical Encoder: %i", vertical_encoder.get_position());
-            //pros::lcd::print(6,"works");
 			
             // delay to save resources
-            pros::delay(20);
+            pros::delay(200);
         }
     });
+
+    // Print debugging to controller
+    while (true) {
+        controller.print(1, 0,"test");
+
+        // Delay to save resources. Doesn't require much speed
+        pros::delay(200);
+    }
 }
 
 /**
@@ -176,9 +188,6 @@ void autonomous() {
     chassis.cancelAllMotions();
 }
 
-pros::adi::DigitalOut pistonExtend('B'); // Initialize the solenoid for extending
-pros::adi::DigitalOut pistonRetract('A'); // Initialize the solenoid for retracting
-pros::Controller controller(pros::E_CONTROLLER_MASTER); // Initialize controller
 /**
  * Runs the operator control code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via

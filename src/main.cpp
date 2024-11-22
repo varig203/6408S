@@ -1,14 +1,15 @@
 #include "main.h"
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "pros/abstract_motor.hpp"
+#include "pros/misc.h"
 #include "pros/motors.h"
 #include "pros/rtos.hpp"
 
 // Creating the Motor groups
-pros::MotorGroup left_motors({7, 9, 8}, pros::MotorGearset::blue); // left motors on ports 7,9,8
-pros::MotorGroup right_motors({-20, -18, -17}, pros::MotorGearset::blue); // right motors on ports 9,18,17
-pros::Motor primary_intake(11, pros::MotorGearset::blue); // Primary Intake on port 11
-pros::Motor secondary_intake(12, pros::MotorGearset::blue); // Secondary Intake on port 12
+pros::MotorGroup left_motors({14, 15, 19}, pros::MotorGearset::blue); // left motors on ports 14, 15, 19
+pros::MotorGroup right_motors({13, 16, 17}, pros::MotorGearset::blue); // right motors on ports 13, 16, 17
+pros::Motor primary_intake(20, pros::MotorGearset::blue); // Primary Intake on port 20
+pros::Motor secondary_intake(18, pros::MotorGearset::blue); // Secondary Intake on port 18
 
 // Creating controller/Pistons
 pros::Controller controller(pros::E_CONTROLLER_MASTER); // Initialize controller
@@ -16,20 +17,20 @@ pros::adi::DigitalOut pistonExtend('B'); // Initialize the solenoid for extendin
 pros::adi::DigitalOut pistonRetract('A'); // Initialize the solenoid for retracting
 
 // Creating Sensors
-pros::Optical optical_sensor(15); // Optical Sensor for donuts
-pros::Imu imu(19); // IMU
+pros::Optical optical_sensor(1); // Optical Sensor for donuts
+pros::Imu imu(2); // IMU
 
 // setting up the vertical Rotation Sensor
-pros::Rotation vertical_encoder(14);
+pros::Rotation vertical_encoder(3);
 lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_275, -2.5);
 
 // drivetrain settings
 lemlib::Drivetrain drivetrain(&left_motors, // left motor group
-                             &right_motors, // right motor group
-                              16, // 10 inch track width
-                              lemlib::Omniwheel::NEW_4, // using new 4" omnis
-                              600, // drivetrain rpm is 600
-                              0 // horizontal drift is 2 (for now)
+                            &right_motors, // right motor group
+                            16, // 10 inch track width
+                            lemlib::Omniwheel::NEW_4, // using new 4" omnis
+                            600, // drivetrain rpm is 600
+                            0 // horizontal drift is 2 (for now)
 );
 
 lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1
@@ -128,12 +129,25 @@ void initialize() {
         }
     });
 
-    // Print debugging to controller
-    while (true) {
-        controller.print(1, 0,"test");
+    //right_motors.move_velocity(600);
+    //left_motors.move_velocity(600);
 
-        // Delay to save resources. Doesn't require much speed
-        pros::delay(200);
+    bool masturButton = false;
+    // Stupid thing Cyrus wanted. This is stupid I hate it
+    // Basically it just vibrates the controller when you press X until you press Y and it stops
+    while (true) {
+        if (controller.get_digital(DIGITAL_X)) {
+            masturButton = true;
+            controller.print(1,0,"Vibrator Activated"); // Cyrus begged for this stupid message to be printed
+        } else if (controller.get_digital(DIGITAL_Y)) {
+            controller.clear_line(1);
+            masturButton = false;
+        } if (masturButton == true) {
+            controller.rumble("-.");
+        }
+
+        // Delay to save resources...
+        pros::delay(20);
     }
 }
 
@@ -143,13 +157,8 @@ void initialize() {
  * the robot is enabled, this task will exit.
  */
 void disabled() {    
-    // Disabling motors
-    //left_motors.move_velocity(0);
-    //right_motors.move_velocity(0);
-    //primary_intake.move_velocity(0);
-    //secondary_intake.move_velocity(0);
-    
-    pros::lcd::print(6, "Robot Disabled"); 
+    controller.print(1,0,"Robot Disabled");
+    controller.rumble("...");
 }
 
 
@@ -291,13 +300,13 @@ void opcontrol() {; // the semi colon for some reason lets it work DO NOT REMOVE
     pros::Task chassisTask{[&]() {
         // Chassis loop
         while (true) {
-            chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
+            chassis.setBrakeMode(pros::E_MOTOR_BRAKE_HOLD);
             // get left y and right x positions
             int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
             int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
             // move the robot
-            chassis.arcade(leftY, -rightX);
+            chassis.arcade(leftY, rightX);
 
             // delay to save resources
             pros::delay(20);

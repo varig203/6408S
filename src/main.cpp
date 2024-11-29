@@ -14,8 +14,8 @@ pros::Motor secondary_intake(18, pros::MotorGearset::blue); // Secondary Intake 
 
 // Creating controller/Pistons
 pros::Controller controller(pros::E_CONTROLLER_MASTER); // Initialize controller
-pros::adi::DigitalOut pistonExtend('B'); // Initialize the solenoid for extending
-pros::adi::DigitalOut pistonRetract('A'); // Initialize the solenoid for retracting
+pros::adi::DigitalOut pistonExtend('A'); // Initialize the solenoid for extending
+pros::adi::DigitalOut pistonRetract('B'); // Initialize the solenoid for retracting
 
 // Creating Sensors
 pros::Optical optical_sensor(1); // Optical Sensor for donuts
@@ -129,24 +129,6 @@ void initialize() {
             pros::delay(200);
         }
     });
-
-    // bool masturButton = false;
-    // // Stupid thing Cyrus wanted. This is stupid I hate it
-    // // Basically it just vibrates the controller when you press X until you press Y and it stops
-    // while (true) {
-    //     if (controller.get_digital(DIGITAL_X)) {
-    //         masturButton = true;
-    //         controller.print(1,0,"Vibrator Activated"); // Cyrus begged for this stupid message to be printed
-    //     } else if (controller.get_digital(DIGITAL_Y)) {
-    //         controller.clear_line(1);
-    //         masturButton = false;
-    //     } if (masturButton == true) {
-    //         controller.rumble("-.");
-    //     }
-
-    //     // Delay to save resources...
-    //     pros::delay(20);
-    // }
 }
 
 /**
@@ -261,8 +243,8 @@ void opcontrol() {; // the semi colon for some reason lets it work DO NOT REMOVE
             
                 // If intake is running, move the motor otherwise, stop it
                 if (intakeRunning) {
-                    primary_intake.move_velocity(-400);  // Runs the motor at 60% power
-                    secondary_intake.move_velocity(-360); // runs motor at 60% power
+                    primary_intake.move_velocity(-500);  // Runs the motor at 60% power
+                    secondary_intake.move_velocity(-500); // runs motor at 60% power
                     intakeRunning = true;
                 } else {
                     primary_intake.move_velocity(0);  // Stops the motor
@@ -276,8 +258,8 @@ void opcontrol() {; // the semi colon for some reason lets it work DO NOT REMOVE
                 intakeRunningReverse = !intakeRunningReverse;
 
                 if (intakeRunningReverse) {
-                    primary_intake.move_velocity(400);
-                    secondary_intake.move_velocity(360);
+                    primary_intake.move_velocity(500);
+                    secondary_intake.move_velocity(500);
                     intakeRunning = true;
                 } else {
                     primary_intake.move_velocity(0);

@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "Skibidi Sigma Balls",
+    "project_name": "Skibidi Blue Balls",
     "target": "v5",
     "templates": {
       "LemLib": {

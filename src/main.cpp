@@ -3,8 +3,12 @@
 #include "pros/abstract_motor.hpp"
 #include "pros/llemu.hpp"
 #include "pros/misc.h"
+#include "pros/misc.hpp"
 #include "pros/motors.h"
 #include "pros/rtos.hpp"
+
+// Initializing global vars
+int intakeSpeed = 0;
 
 // Creating the Motor groups
 pros::MotorGroup left_motors({-14, -15, -19}, pros::MotorGearset::blue); // left motors on ports 14, 15, 19
@@ -17,9 +21,9 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER); // Initialize controller
 pros::adi::DigitalOut pistonExtend('A'); // Initialize the solenoid for extending
 pros::adi::DigitalOut pistonRetract('B'); // Initialize the solenoid for retracting
 
-// Creating Sensors
-pros::Optical optical_sensor(1); // Optical Sensor for donuts
-pros::Imu imu(2); // IMU
+// Creating Sensors and configuring them
+pros::Optical optical_sensor(10); // Optical Sensor for donuts
+pros::Imu imu(12); // IMU
 
 // setting up the vertical Rotation Sensor
 pros::Rotation vertical_encoder(3);
@@ -105,7 +109,7 @@ void on_center_button() {
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
-void initialize() {
+void initialize() {;
     pros::lcd::initialize(); // initialize brain screen
 	pros::lcd::register_btn0_cb(on_center_button);
     chassis.calibrate(); // calibrate sensors
@@ -125,10 +129,31 @@ void initialize() {
             // print measurements from the rVertical Encoder
             pros::lcd::print(5, "Vertical Encoder: %i", vertical_encoder.get_position());
 			
+            // Waiting for driver control
+            controller.print(0, 0, "STATUS: %c", pros::competition::get_status());
+
             // delay to save resources
             pros::delay(200);
         }
     });
+
+    // DISABLED
+    // pros::Task sensors_task([&](){
+    //     // Configuring the sensors
+    //     optical_sensor.disable_gesture();
+    //     optical_sensor.set_led_pwm(5);
+
+    //     // checks the optical sensor
+    //     while (true) {
+    //         int hue_value = optical_sensor.get_hue(); // Checks what colour is in front of it
+    //         if (hue_value >= 0 && hue_value <= 17) { // change for red detect to 0/17. for blue detect to 150/255
+    //             intakeSpeed = 600;
+    //         } else {
+    //             intakeSpeed = 400;
+    //         }
+    //         pros::delay(30);
+    //     }
+    // });
 }
 
 /**
@@ -195,8 +220,6 @@ void opcontrol() {; // the semi colon for some reason lets it work DO NOT REMOVE
     // Initializing vars
     bool isExtended = false; // State variable to track piston status
     int lastButtonStateMogo = 0; // To track the last button state Intake
-    bool intakeRunning = false;
-    bool intakeRunningReverse = false;
 
     // Lambda threadding to allow the other functions to continue running while this one is doing its thing
     pros::Task mogoControl{[&]() {
@@ -229,51 +252,21 @@ void opcontrol() {; // the semi colon for some reason lets it work DO NOT REMOVE
     // Intake control task running on a separate thread
     pros::Task intakeControl{[&]() {
 
-        bool lastButtonStateIntake = false;
-        bool lastButtonStateIntakeReverse = false;
-
-        // Main loop for controlling the intake
         while (true) {
-            int currentButtonStateIntake = controller.get_digital_new_press(DIGITAL_R1);  // R1 for normal direction
-            int currentButtonStateReverse = controller.get_digital_new_press(DIGITAL_R2); // R2 for reverse
+            //detect thingy
+            int IntakeForward = controller.get_digital(DIGITAL_R2);
+            int IntakeBackward = controller.get_digital(DIGITAL_R1);
 
-            if (currentButtonStateIntake && !lastButtonStateIntake) {
-                // Toggle the intake motor state
-                intakeRunning = !intakeRunning;
-            
-                // If intake is running, move the motor otherwise, stop it
-                if (intakeRunning) {
-                    primary_intake.move_velocity(-500);  // Runs the motor at 60% power
-                    secondary_intake.move_velocity(-500); // runs motor at 60% power
-                    intakeRunning = true;
-                } else {
-                    primary_intake.move_velocity(0);  // Stops the motor
-                    secondary_intake.move_velocity(0);
-                    intakeRunning = false;
-                }
+            if (IntakeForward) {
+                primary_intake.move_velocity(-intakeSpeed); //spinny thingy forward (Outtake)
+                secondary_intake.move_velocity(-intakeSpeed);
+            } else if (IntakeBackward) {
+                primary_intake.move_velocity(intakeSpeed); // spinny thingy backward
+                secondary_intake.move_velocity(intakeSpeed);
+            } else {   
+                primary_intake.move_velocity(0); //spinny thingy stop
+                secondary_intake.move_velocity(0);
             }
-
-            // Basically the same as last one but the intake is reversed
-            if (currentButtonStateReverse && !lastButtonStateIntakeReverse) {
-                intakeRunningReverse = !intakeRunningReverse;
-
-                if (intakeRunningReverse) {
-                    primary_intake.move_velocity(500);
-                    secondary_intake.move_velocity(500);
-                    intakeRunning = true;
-                } else {
-                    primary_intake.move_velocity(0);
-                    secondary_intake.move_velocity(0);
-                    intakeRunning = false;
-                }
-
-            }
-
-            // Update the previous button state for next loop iteration
-            lastButtonStateIntake = currentButtonStateIntake;
-            lastButtonStateIntakeReverse = currentButtonStateReverse;
-
-            pros::delay(20); // Delay to save resources :3
         }
     }};
 
@@ -291,7 +284,6 @@ void opcontrol() {; // the semi colon for some reason lets it work DO NOT REMOVE
 
             // delay to save resources
             pros::delay(20);
-            pros::lcd::print(7, "Chassis function working");
         }
     }};
 }

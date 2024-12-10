@@ -6,9 +6,7 @@
 #include "pros/misc.hpp"
 #include "pros/motors.h"
 #include "pros/rtos.hpp"
-
-// Initializing global vars
-int intakeSpeed = 0;
+#include <iostream>
 
 // Creating the Motor groups
 pros::MotorGroup left_motors({-14, -15, -19}, pros::MotorGearset::blue); // left motors on ports 14, 15, 19
@@ -22,11 +20,11 @@ pros::adi::DigitalOut pistonExtend('A'); // Initialize the solenoid for extendin
 pros::adi::DigitalOut pistonRetract('B'); // Initialize the solenoid for retracting
 
 // Creating Sensors and configuring them
-pros::Optical optical_sensor(10); // Optical Sensor for donuts
+//pros::Optical optical_sensor(10); // Optical Sensor for donuts
 pros::Imu imu(12); // IMU
 
 // setting up the vertical Rotation Sensor
-pros::Rotation vertical_encoder(3);
+pros::Rotation vertical_encoder(11);
 lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_275, -2.5);
 
 // drivetrain settings
@@ -49,23 +47,23 @@ lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel
 lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
                                               0, // integral gain (kI)
                                               3, // derivative gain (kD)
-                                              3, // anti windup
-                                              1, // small error range, in inches
-                                              100, // small error range timeout, in milliseconds
-                                              3, // large error range, in inches
-                                              500, // large error range timeout, in milliseconds
-                                              20 // maximum acceleration (slew)
+                                              0, // anti windup
+                                              0, // small error range, in inches
+                                              0, // small error range timeout, in milliseconds
+                                              0, // large error range, in inches
+                                              0, // large error range timeout, in milliseconds
+                                              0 // maximum acceleration (slew)
 );
 
 // angular PID controller
 lemlib::ControllerSettings angular_controller(2, // proportional gain (kP)
                                               0, // integral gain (kI)
-                                              29, // derivative gain (kD)
-                                              3, // anti windup
-                                              1, // small error range, in degrees
-                                              100, // small error range timeout, in milliseconds
-                                              3, // large error range, in degrees
-                                              500, // large error range timeout, in milliseconds
+                                              10, // derivative gain (kD)
+                                              0, // anti windup
+                                              0, // small error range, in degrees
+                                              0, // small error range timeout, in milliseconds
+                                              0, // large error range, in degrees
+                                              0, // large error range timeout, in milliseconds
                                               0 // maximum acceleration (slew)
 );
 
@@ -115,45 +113,25 @@ void initialize() {;
     chassis.calibrate(); // calibrate sensors
 
     // print debugging to brain screen
-    pros::Task screen_task([&]() {
-        while (true) {
-            // print robot location to the brain screen
-            pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
-            pros::lcd::print(1, "Y: %f", chassis.getPose().y); // y
-            pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
+    while (true) {
+        // print robot location to the brain screen
+        pros::lcd::print(0, "X: %f", chassis.getPose().x); // x
+        pros::lcd::print(1, "Y: %f", chassis.getPose().y); // y
+        pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
 
-            // IMU readings
-            pros::lcd::print(3, "IMU Heading: %f", imu.get_heading()); // IMU heading
-            pros::lcd::print(4, "Gyro Rate: %f", imu.get_gyro_rate()); // Angular velocity
+        // IMU readings
+        pros::lcd::print(3, "IMU Heading: %f", imu.get_heading()); // IMU heading
+        pros::lcd::print(4, "Gyro Rate: %f", imu.get_gyro_rate()); // Angular velocity
 
-            // print measurements from the rVertical Encoder
-            pros::lcd::print(5, "Vertical Encoder: %i", vertical_encoder.get_position());
+        // print measurements from the rVertical Encoder
+        pros::lcd::print(5, "Vertical Encoder: %i", vertical_encoder.get_position());
 			
-            // Waiting for driver control
-            controller.print(0, 0, "STATUS: %c", pros::competition::get_status());
+        // Waiting for driver control
+        controller.print(0, 0, "STATUS: %c", pros::competition::get_status());
 
-            // delay to save resources
-            pros::delay(200);
-        }
-    });
-
-    // DISABLED
-    // pros::Task sensors_task([&](){
-    //     // Configuring the sensors
-    //     optical_sensor.disable_gesture();
-    //     optical_sensor.set_led_pwm(5);
-
-    //     // checks the optical sensor
-    //     while (true) {
-    //         int hue_value = optical_sensor.get_hue(); // Checks what colour is in front of it
-    //         if (hue_value >= 0 && hue_value <= 17) { // change for red detect to 0/17. for blue detect to 150/255
-    //             intakeSpeed = 600;
-    //         } else {
-    //             intakeSpeed = 400;
-    //         }
-    //         pros::delay(30);
-    //     }
-    // });
+        // delay to save resources
+        pros::delay(20);
+    }
 }
 
 /**
@@ -216,18 +194,18 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 
-void opcontrol() {; // the semi colon for some reason lets it work DO NOT REMOVE
+void solenoidControl_fn() {
+    std::cout << "Solenoid Control Starting..." << std::endl; // Debugging
+
     // Initializing vars
     bool isExtended = false; // State variable to track piston status
     int lastButtonStateMogo = 0; // To track the last button state Intake
 
-    // Lambda threadding to allow the other functions to continue running while this one is doing its thing
-    pros::Task mogoControl{[&]() {
-        while (true) {
-            int currentButtonStateMogo = controller.get_digital(DIGITAL_L1);
+    while (true) {
+        int currentButtonStateMogo = controller.get_digital_new_press(DIGITAL_L1);
 
-            // Check for button press
-            if (currentButtonStateMogo && !lastButtonStateMogo) {
+        // Check for button press
+        if (currentButtonStateMogo && !lastButtonStateMogo) {
                 isExtended = !isExtended; // Toggle the piston state
 
                 if (isExtended) {
@@ -237,53 +215,46 @@ void opcontrol() {; // the semi colon for some reason lets it work DO NOT REMOVE
                     isExtended = true;
                 } else {
                     pistonExtend.set_value(0);
-                    pros::delay(100);
+                    pros::delay(75);
                     pistonRetract.set_value(1);
                     isExtended = false;
                 }
 
-                pros::delay(500); // delay to prevent spamming the solenoids
+                // pros::delay(500); // delay to prevent spamming the solenoids
             }
         lastButtonStateMogo = currentButtonStateMogo;
         pros::delay(20); // Saving resources
+    }
+}
+
+// Controls both Intake motors and drivetrain motors
+void motorControl_fn() {
+    while (true) {
+        //detect thingy
+        int IntakeForward = controller.get_digital(DIGITAL_R2);
+        int IntakeBackward = controller.get_digital(DIGITAL_R1);
+        // get left y and right x positions
+        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+
+        // move the robot
+        chassis.arcade(leftY, rightX);
+
+        if (IntakeForward) {
+            primary_intake.move_velocity(-400); //spinny thingy forward (Outtake)
+            secondary_intake.move_velocity(-400);
+        } else if (IntakeBackward) {
+            primary_intake.move_velocity(400); // spinny thingy backward
+            secondary_intake.move_velocity(400);
+        } else {   
+            primary_intake.move_velocity(0); //spinny thingy stop
+            secondary_intake.move_velocity(0);
         }
-    }};
+    pros::delay(20);
+    }
+} 
 
-    // Intake control task running on a separate thread
-    pros::Task intakeControl{[&]() {
-
-        while (true) {
-            //detect thingy
-            int IntakeForward = controller.get_digital(DIGITAL_R2);
-            int IntakeBackward = controller.get_digital(DIGITAL_R1);
-
-            if (IntakeForward) {
-                primary_intake.move_velocity(-intakeSpeed); //spinny thingy forward (Outtake)
-                secondary_intake.move_velocity(-intakeSpeed);
-            } else if (IntakeBackward) {
-                primary_intake.move_velocity(intakeSpeed); // spinny thingy backward
-                secondary_intake.move_velocity(intakeSpeed);
-            } else {   
-                primary_intake.move_velocity(0); //spinny thingy stop
-                secondary_intake.move_velocity(0);
-            }
-        }
-    }};
-
-    pros::Task chassisTask{[&]() {
-
-        chassis.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
-        // Chassis loop
-        while (true) {
-            // get left y and right x positions
-            int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-            int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
-
-            // move the robot
-            chassis.arcade(leftY, rightX);
-
-            // delay to save resources
-            pros::delay(20);
-        }
-    }};
+void opcontrol() {
+    pros::Task solenoidControl(solenoidControl_fn);
+    pros::Task motorControl(motorControl_fn);
 }

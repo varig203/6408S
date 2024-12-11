@@ -1,6 +1,7 @@
 #include "main.h"
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "pros/abstract_motor.hpp"
+#include "pros/adi.hpp"
 #include "pros/llemu.hpp"
 #include "pros/misc.h"
 #include "pros/misc.hpp"
@@ -16,11 +17,11 @@ pros::Motor secondary_intake(18, pros::MotorGearset::blue); // Secondary Intake 
 
 // Creating controller/Pistons
 pros::Controller controller(pros::E_CONTROLLER_MASTER); // Initialize controller
-pros::adi::DigitalOut pistonExtend('A'); // Initialize the solenoid for extending
-pros::adi::DigitalOut pistonRetract('B'); // Initialize the solenoid for retracting
+pros::adi::DigitalOut pistonExtendMogo('A'); // Initialize the solenoid for extending MOGO
+pros::adi::DigitalOut pistonRetractMogo('B'); // Initialize the solenoid for retracting MOGO
+pros::adi::DigitalOut pistonLB('C'); // Initialize the LB mech
 
-// Creating Sensors and configuring them
-//pros::Optical optical_sensor(10); // Optical Sensor for donuts
+// Creating Sensors
 pros::Imu imu(12); // IMU
 
 // setting up the vertical Rotation Sensor
@@ -33,13 +34,13 @@ lemlib::Drivetrain drivetrain(&left_motors, // left motor group
                             16, // 10 inch track width
                             lemlib::Omniwheel::NEW_4, // using new 4" omnis
                             600, // drivetrain rpm is 600
-                            0 // horizontal drift is 2 (for now)
+                            2 // horizontal drift is 2 (for now)
 );
 
 lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1
                             nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
-                            nullptr, // horizontal tracking wheel 1
-                            nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
+                            nullptr, // horizontal tracking wheel 1, set to nullptr as we don't have any
+                            nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have any
                             &imu // inertial sensor
 );
 
@@ -126,7 +127,7 @@ void initialize() {;
         // print measurements from the rVertical Encoder
         pros::lcd::print(5, "Vertical Encoder: %i", vertical_encoder.get_position());
 			
-        // Waiting for driver control
+        // Shows the driver what comp status the bot is in
         controller.print(0, 0, "STATUS: %c", pros::competition::get_status());
 
         // delay to save resources
@@ -140,8 +141,8 @@ void initialize() {;
  * the robot is enabled, this task will exit.
  */
 void disabled() {    
-    controller.print(1,0,"Robot Disabled");
-    controller.rumble("...");
+    controller.print(1,0,"Robot Disabled"); // incase the driver can't see the previous warning
+    controller.rumble("..."); // Non-verbal warning to driver
 }
 
 
@@ -180,6 +181,79 @@ void autonomous() {
     chassis.cancelAllMotions();
 }
 
+void solenoidControl_fn() { // Controls all the solenoids on the robot in a single task
+    std::cout << "Solenoid Control Starting..." << std::endl; // Print into PROS Terminal for debugging
+
+    // Initializing vars
+    bool isExtended = false; // State variable to track piston status
+    bool isExtendedLB = false; // Lady brown mech
+    int lastButtonStateMogo = 0; // To track the last button state Intake
+    int lastButtonStateLB = 0; // Lady brown mech
+
+    while (true) {
+        int currentButtonStateMogo = controller.get_digital_new_press(DIGITAL_L1); // Mogo mech
+        int currentButtonStateLB = controller.get_digital_new_press(DIGITAL_L2); //  LB Mech
+
+        // Check for button press
+        if (currentButtonStateMogo && !lastButtonStateMogo) {
+                isExtended = !isExtended; // Toggle the piston state
+
+                if (isExtended) {
+                    pistonRetractMogo.set_value(0);
+                    pros::delay(100);
+                    pistonExtendMogo.set_value(1);
+                    isExtended = true;
+                } else {
+                    pistonExtendMogo.set_value(0);
+                    pros::delay(75);
+                    pistonRetractMogo.set_value(1);
+                    isExtended = false;
+                }
+            } else if (currentButtonStateLB && !lastButtonStateLB) {
+                isExtendedLB = !isExtendedLB; // Togle thing
+
+                if (isExtendedLB) { 
+                    pistonLB.set_value(0);
+                    pros::delay(100);
+                } else {
+                    pistonLB.set_value(1);
+                    pros::delay(100);
+                }
+            }
+        lastButtonStateMogo = currentButtonStateMogo;
+
+        pros::delay(20); // Saving resources
+    }
+}
+
+void motorControl_fn() { // Controls both Intake motors and drivetrain motors
+    std::cout << "Motor Control Starting..." << std::endl; // Print into PROS Terminal for debugging
+
+    while (true) {
+        // Read controller inputs
+        int IntakeForward = controller.get_digital(DIGITAL_R2);
+        int IntakeBackward = controller.get_digital(DIGITAL_R1);
+        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y); // Up and down on the left stick
+        int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X); // Left and right on the right stick
+
+        // Drivetrain control
+        chassis.arcade(leftY, rightX);
+
+        if (IntakeForward) {
+            primary_intake.move_velocity(-400); //spinny thingy forward (Out take)
+            secondary_intake.move_velocity(-400);
+        } else if (IntakeBackward) {
+            primary_intake.move_velocity(400); // spinny thingy backward
+            secondary_intake.move_velocity(400);
+        } else {   
+            primary_intake.move_velocity(0); //spinny thingy stop
+            secondary_intake.move_velocity(0);
+        }
+        
+        pros::delay(20);
+    }
+} 
+
 /**
  * Runs the operator control code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -193,66 +267,6 @@ void autonomous() {
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
-
-void solenoidControl_fn() {
-    std::cout << "Solenoid Control Starting..." << std::endl; // Debugging
-
-    // Initializing vars
-    bool isExtended = false; // State variable to track piston status
-    int lastButtonStateMogo = 0; // To track the last button state Intake
-
-    while (true) {
-        int currentButtonStateMogo = controller.get_digital_new_press(DIGITAL_L1);
-
-        // Check for button press
-        if (currentButtonStateMogo && !lastButtonStateMogo) {
-                isExtended = !isExtended; // Toggle the piston state
-
-                if (isExtended) {
-                    pistonRetract.set_value(0);
-                    pros::delay(100);
-                    pistonExtend.set_value(1);
-                    isExtended = true;
-                } else {
-                    pistonExtend.set_value(0);
-                    pros::delay(75);
-                    pistonRetract.set_value(1);
-                    isExtended = false;
-                }
-
-                // pros::delay(500); // delay to prevent spamming the solenoids
-            }
-        lastButtonStateMogo = currentButtonStateMogo;
-        pros::delay(20); // Saving resources
-    }
-}
-
-// Controls both Intake motors and drivetrain motors
-void motorControl_fn() {
-    while (true) {
-        //detect thingy
-        int IntakeForward = controller.get_digital(DIGITAL_R2);
-        int IntakeBackward = controller.get_digital(DIGITAL_R1);
-        // get left y and right x positions
-        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-        int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
-
-        // move the robot
-        chassis.arcade(leftY, rightX);
-
-        if (IntakeForward) {
-            primary_intake.move_velocity(-400); //spinny thingy forward (Outtake)
-            secondary_intake.move_velocity(-400);
-        } else if (IntakeBackward) {
-            primary_intake.move_velocity(400); // spinny thingy backward
-            secondary_intake.move_velocity(400);
-        } else {   
-            primary_intake.move_velocity(0); //spinny thingy stop
-            secondary_intake.move_velocity(0);
-        }
-    pros::delay(20);
-    }
-} 
 
 void opcontrol() {
     pros::Task solenoidControl(solenoidControl_fn);

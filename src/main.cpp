@@ -7,7 +7,7 @@
 #include "pros/misc.hpp"
 #include "pros/motors.h"
 #include "pros/rtos.hpp"
-#include <iostream>
+//#include <iostream>
 
 // Creating the Motor groups
 pros::MotorGroup left_motors({-14, -15, -19}, pros::MotorGearset::blue); // left motors on ports 14, 15, 19
@@ -182,7 +182,7 @@ void autonomous() {
 }
 
 void solenoidControl_fn() { // Controls all the solenoids on the robot in a single task
-    std::cout << "Solenoid Control Starting..." << std::endl; // Print into PROS Terminal for debugging
+    //std::cout << "Solenoid Control Starting..." << std::endl; // Print into PROS Terminal for debugging
 
     // Initializing vars
     bool isExtended = false; // State variable to track piston status
@@ -227,7 +227,7 @@ void solenoidControl_fn() { // Controls all the solenoids on the robot in a sing
 }
 
 void motorControl_fn() { // Controls both Intake motors and drivetrain motors
-    std::cout << "Motor Control Starting..." << std::endl; // Print into PROS Terminal for debugging
+    //std::cout << "Motor Control Starting..." << std::endl; // Print into PROS Terminal for debugging
 
     while (true) {
         // Read controller inputs

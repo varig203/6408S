@@ -1,8 +1,6 @@
 #include "main.h"
 #include "lemlib/api.hpp" // IWYU pragma: keep
-<<<<<<< HEAD
 #include "pros/adi.hpp"
-=======
 #include "pros/abstract_motor.hpp"
 #include "pros/adi.hpp"
 #include "pros/llemu.hpp"
@@ -10,8 +8,9 @@
 #include "pros/misc.hpp"
 #include "pros/motors.h"
 #include "pros/rtos.hpp"
-//#include <iostream>
->>>>>>> 52cdfe77c3ebd97163e9b70d25d7aae4e29392c0
+#include <iostream>
+#include <ostream>
+
 
 // Creating the Motor groups
 pros::MotorGroup left_motors({-14, -15, -19}, pros::MotorGearset::blue); // left motors on ports 14, 15, 19
@@ -19,13 +18,6 @@ pros::MotorGroup right_motors({13, 16, 17}, pros::MotorGearset::blue); // right 
 pros::Motor primary_intake(20, pros::MotorGearset::blue); // Primary Intake on port 20
 pros::Motor secondary_intake(18, pros::MotorGearset::blue); // Secondary Intake on port 18
 
-<<<<<<< HEAD
-// Creating the IMU port
-pros::Imu imu(21);
-// Creating the Vertical tracker
-pros::adi::Encoder vertical_encoder('A', 'B', true);
-lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_275, +1);
-=======
 // Creating controller/Pistons
 pros::Controller controller(pros::E_CONTROLLER_MASTER); // Initialize controller
 pros::adi::DigitalOut pistonExtendMogo('A'); // Initialize the solenoid for extending MOGO
@@ -38,7 +30,6 @@ pros::Imu imu(12); // IMU
 // setting up the vertical Rotation Sensor
 pros::Rotation vertical_encoder(11);
 lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_275, -2.5);
->>>>>>> 52cdfe77c3ebd97163e9b70d25d7aae4e29392c0
 
 // drivetrain settings
 lemlib::Drivetrain drivetrain(&left_motors, // left motor group
@@ -49,11 +40,7 @@ lemlib::Drivetrain drivetrain(&left_motors, // left motor group
                             2 // horizontal drift is 2 (for now)
 );
 
-<<<<<<< HEAD
-lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1, set to null
-=======
 lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1
->>>>>>> 52cdfe77c3ebd97163e9b70d25d7aae4e29392c0
                             nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
                             nullptr, // horizontal tracking wheel 1, set to nullptr as we don't have any
                             nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have any
@@ -111,11 +98,7 @@ void on_center_button() {
   static bool pressed = false;
   pressed = !pressed;
   if (pressed) {
-<<<<<<< HEAD
-    pros::lcd::set_text(7, "Running Autonomous");
-=======
     pros::lcd::set_text(6, "Running Autonomous!");
->>>>>>> 52cdfe77c3ebd97163e9b70d25d7aae4e29392c0
     autonomous();
   } else {
     pros::lcd::clear_line(7);
@@ -133,20 +116,6 @@ void initialize() {;
 	pros::lcd::register_btn0_cb(on_center_button);
     chassis.calibrate(); // calibrate sensors
 
-<<<<<<< HEAD
-            // IMU readings
-            pros::lcd::print(3, "IMU Heading: %f", imu.get_heading()); // IMU heading
-            pros::lcd::print(4, "Gyro Rate: %f", imu.get_gyro_rate()); // Angular velocity
-
-            // print measurements from the adi encoder
-            pros::lcd::print(5, "ADI Encoder: %i", vertical_encoder.get_value());
-            // print measurements from the rotation sensor
-			
-            // delay to save resources
-            pros::delay(20);
-        }
-    });
-=======
     // print debugging to brain screen
     while (true) {
         // print robot location to the brain screen
@@ -167,7 +136,6 @@ void initialize() {;
         // delay to save resources
         pros::delay(20);
     }
->>>>>>> 52cdfe77c3ebd97163e9b70d25d7aae4e29392c0
 }
 
 /**
@@ -217,7 +185,7 @@ void autonomous() {
 }
 
 void solenoidControl_fn() { // Controls all the solenoids on the robot in a single task
-    //std::cout << "Solenoid Control Starting..." << std::endl; // Print into PROS Terminal for debugging
+    std::cout << "Solenoid Control Starting..." << std::endl; // Print into PROS Terminal for debugging
 
     // Initializing vars
     bool isExtended = false; // State variable to track piston status
@@ -262,7 +230,7 @@ void solenoidControl_fn() { // Controls all the solenoids on the robot in a sing
 }
 
 void motorControl_fn() { // Controls both Intake motors and drivetrain motors
-    //std::cout << "Motor Control Starting..." << std::endl; // Print into PROS Terminal for debugging
+    std::cout << "Motor Control Starting..." << std::endl; // Print into PROS Terminal for debugging
 
     while (true) {
         // Read controller inputs
@@ -302,12 +270,10 @@ void motorControl_fn() { // Controls both Intake motors and drivetrain motors
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
-<<<<<<< HEAD
-pros::Controller controller(pros::E_CONTROLLER_MASTER);
-=======
->>>>>>> 52cdfe77c3ebd97163e9b70d25d7aae4e29392c0
 
 void opcontrol() {
+    std::cout << "Starting functions..." << std::endl;
     pros::Task solenoidControl(solenoidControl_fn);
     pros::Task motorControl(motorControl_fn);
+    std::cout << "Finished!" << std::endl;
 }

@@ -1,4 +1,4 @@
-#include "hardware.hpp"
+#include "robot/hardware.hpp"
 
 // Motor groups
 pros::MotorGroup left_motors({-14, -15, -19}, pros::MotorGearset::blue);  // left motors on ports 14, 15, 19
@@ -31,10 +31,3 @@ lemlib::ExpoDriveCurve steer_curve(3, 10, 1.019);
 
 // Chassis
 lemlib::Chassis chassis(drivetrain, lateral_controller, angular_controller, sensors, &steer_curve, &throttle_curve);
-
-// Function to initialize hardware (can be used in main.cpp)
-void initialize_hardware() {
-    // Any additional hardware initialization if needed
-    pros::lcd::initialize();
-    pros::lcd::print(0, "Hardware Initialized");
-}

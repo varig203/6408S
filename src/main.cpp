@@ -27,7 +27,30 @@ void initialize() {
     pros::lcd::initialize(); // initialize brain screen
     pros::lcd::register_btn0_cb(on_center_button);
     chassis.calibrate(); // calibrate sensors
+}
 
+/**
+ * Runs while the robot is in the disabled state of Field Management System or
+ * the VEX Competition Switch, following either autonomous or opcontrol. When
+ * the robot is enabled, this task will exit.
+ */
+void disabled() {
+    controller.print(0, 0, "Robot Disabled"); // incase the driver can't see the previous warning
+    controller.rumble("...");                 // Non-verbal warning to driver
+}
+
+/**
+ * Runs after initialize(), and before autonomous when connected to the Field
+ * Management System or the VEX Competition Switch. This is intended for
+ * competition-specific initialization routines, such as an autonomous selector
+ * on the LCD.
+ *
+ * This task will exit when the robot is enabled and autonomous or opcontrol
+ * starts.
+ */
+void competition_initialize() {}
+
+void brainScreen_fn() {
     // print debugging to brain screen
     while (true) {
         // print robot location to the brain screen
@@ -42,34 +65,10 @@ void initialize() {
         // print measurements from the rVertical Encoder
         pros::lcd::print(5, "Vertical Encoder: %i", vertical_encoder.get_position());
 
-        // Shows the driver what comp status the bot is in
-        controller.print(0, 0, "STATUS: %c", pros::competition::get_status());
-
         // delay to save resources
         pros::delay(20);
     }
 }
-
-/**
- * Runs while the robot is in the disabled state of Field Management System or
- * the VEX Competition Switch, following either autonomous or opcontrol. When
- * the robot is enabled, this task will exit.
- */
-void disabled() {
-    controller.print(1, 0, "Robot Disabled"); // incase the driver can't see the previous warning
-    controller.rumble("...");                 // Non-verbal warning to driver
-}
-
-/**
- * Runs after initialize(), and before autonomous when connected to the Field
- * Management System or the VEX Competition Switch. This is intended for
- * competition-specific initialization routines, such as an autonomous selector
- * on the LCD.
- *
- * This task will exit when the robot is enabled and autonomous or opcontrol
- * starts.
- */
-void competition_initialize() {}
 
 void solenoidControl_fn() {                                   // Controls all the solenoids on the robot in a single task
     std::cout << "Solenoid Control Starting..." << std::endl; // Print into PROS Terminal for debugging
@@ -118,6 +117,7 @@ void solenoidControl_fn() {                                   // Controls all th
 
 void motorControl_fn() {                                   // Controls both Intake motors and drivetrain motors
     std::cout << "Motor Control Starting..." << std::endl; // Print into PROS Terminal for debugging
+    controller.clear_line(0);                              // Clears line in case the bot goes out of disabled
 
     while (true) {
         // Read controller inputs
@@ -160,6 +160,7 @@ void motorControl_fn() {                                   // Controls both Inta
 
 void opcontrol() {
     std::cout << "Starting functions..." << std::endl;
+    pros::Task BrainScreen(brainScreen_fn);
     pros::Task solenoidControl(solenoidControl_fn);
     pros::Task motorControl(motorControl_fn);
     std::cout << "Finished!" << std::endl;

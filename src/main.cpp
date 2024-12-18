@@ -1,10 +1,10 @@
 #include "main.h"
+#include "pros/llemu.hpp"
+#include "pros/misc.h"
+#include "pros/rtos.hpp"
 #include "robot/hardware.hpp"
 #include <iostream>
 #include <ostream>
-#include "pros/rtos.hpp"
-#include "pros/misc.h"
-#include "pros/llemu.hpp"
 
 void on_center_button() {
     static bool pressed = false;

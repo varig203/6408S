@@ -1,10 +1,10 @@
 #include "main.h"
+#include "pros/adi.hpp"
 #include "pros/llemu.hpp"
 #include "pros/misc.h"
 #include "pros/rtos.hpp"
+#include "robot/autonomous.hpp"
 #include "robot/hardware.hpp"
-#include <iostream>
-#include <ostream>
 
 void on_center_button() {
     static bool pressed = false;
@@ -16,39 +16,6 @@ void on_center_button() {
         pros::lcd::clear_line(7);
     }
 }
-
-/**
- * Runs initialization code. This occurs as soon as the program is started.
- *
- * All other competition modes are blocked by initialize; it is recommended
- * to keep execution time for this mode under a few seconds.
- */
-void initialize() {
-    pros::lcd::initialize(); // initialize brain screen
-    pros::lcd::register_btn0_cb(on_center_button);
-    chassis.calibrate(); // calibrate sensors
-}
-
-/**
- * Runs while the robot is in the disabled state of Field Management System or
- * the VEX Competition Switch, following either autonomous or opcontrol. When
- * the robot is enabled, this task will exit.
- */
-void disabled() {
-    controller.print(0, 0, "Robot Disabled"); // incase the driver can't see the previous warning
-    controller.rumble("...");                 // Non-verbal warning to driver
-}
-
-/**
- * Runs after initialize(), and before autonomous when connected to the Field
- * Management System or the VEX Competition Switch. This is intended for
- * competition-specific initialization routines, such as an autonomous selector
- * on the LCD.
- *
- * This task will exit when the robot is enabled and autonomous or opcontrol
- * starts.
- */
-void competition_initialize() {}
 
 void brainScreen_fn() {
     // print debugging to brain screen
@@ -70,9 +37,7 @@ void brainScreen_fn() {
     }
 }
 
-void solenoidControl_fn() {                                   // Controls all the solenoids on the robot in a single task
-    std::cout << "Solenoid Control Starting..." << std::endl; // Print into PROS Terminal for debugging
-
+void solenoidControl_fn() { // Controls all the solenoids on the robot in a single task
     // Initializing vars
     bool isExtended          = false; // State variable to track piston status
     bool isExtendedLB        = false; // Lady brown mech
@@ -98,16 +63,6 @@ void solenoidControl_fn() {                                   // Controls all th
                 pistonRetractMogo.set_value(1);
                 isExtended = false;
             }
-        } else if (currentButtonStateLB && !lastButtonStateLB) {
-            isExtendedLB = !isExtendedLB; // Togle thing
-
-            if (isExtendedLB) {
-                pistonLB.set_value(0);
-                pros::delay(100);
-            } else {
-                pistonLB.set_value(1);
-                pros::delay(100);
-            }
         }
         lastButtonStateMogo = currentButtonStateMogo;
 
@@ -115,10 +70,7 @@ void solenoidControl_fn() {                                   // Controls all th
     }
 }
 
-void motorControl_fn() {                                   // Controls both Intake motors and drivetrain motors
-    std::cout << "Motor Control Starting..." << std::endl; // Print into PROS Terminal for debugging
-    controller.clear_line(0);                              // Clears line in case the bot goes out of disabled
-
+void motorControl_fn() { // Controls both Intake motors and drivetrain motors
     while (true) {
         // Read controller inputs
         int IntakeForward  = controller.get_digital(DIGITAL_R2);
@@ -130,19 +82,53 @@ void motorControl_fn() {                                   // Controls both Inta
         chassis.arcade(leftY, rightX);
 
         if (IntakeForward) {
-            primary_intake.move_velocity(-400); // spinny thingy forward (Out take)
-            secondary_intake.move_velocity(-400);
+            primary_intake.move_velocity(-600); // spinny thingy forward (Out take)
+            secondary_intake.move_velocity(-600);
         } else if (IntakeBackward) {
-            primary_intake.move_velocity(400); // spinny thingy backward
-            secondary_intake.move_velocity(400);
+            primary_intake.move_velocity(600); // spinny thingy backward
+            secondary_intake.move_velocity(600);
         } else {
             primary_intake.move_velocity(0); // spinny thingy stop
             secondary_intake.move_velocity(0);
         }
-
+        controller.clear_line(0); // Clears line in case the bot goes out of disabled
         pros::delay(20);
     }
 }
+
+/**
+ * Runs initialization code. This occurs as soon as the program is started.
+ *
+ * All other competition modes are blocked by initialize; it is recommended
+ * to keep execution time for this mode under a few seconds.
+ */
+void initialize() {
+    pros::lcd::initialize(); // initialize brain screen
+    pros::lcd::register_btn0_cb(on_center_button);
+    chassis.calibrate(); // calibrate sensors
+    pros::Task BrainScreen(brainScreen_fn);
+}
+
+/**
+ * Runs while the robot is in the disabled state of Field Management System or
+ * the VEX Competition Switch, following either autonomous or opcontrol. When
+ * the robot is enabled, this task will exit.
+ */
+void disabled() {
+    controller.print(0, 0, "Robot Disabled"); // incase the driver can't see the warning
+    controller.rumble("...");                 // Non-verbal warning to driver
+}
+
+/**
+ * Runs after initialize(), and before autonomous when connected to the Field
+ * Management System or the VEX Competition Switch. This is intended for
+ * competition-specific initialization routines, such as an autonomous selector
+ * on the LCD.
+ *
+ * This task will exit when the robot is enabled and autonomous or opcontrol
+ * starts.
+ */
+void competition_initialize() {}
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -157,11 +143,7 @@ void motorControl_fn() {                                   // Controls both Inta
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
-
 void opcontrol() {
-    std::cout << "Starting functions..." << std::endl;
-    pros::Task BrainScreen(brainScreen_fn);
     pros::Task solenoidControl(solenoidControl_fn);
     pros::Task motorControl(motorControl_fn);
-    std::cout << "Finished!" << std::endl;
 }

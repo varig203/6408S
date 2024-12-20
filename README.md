@@ -1,3 +1,3 @@
-# V5 6048S | Special Ed
+# V5 6048S
 
-Using test branch because I am too lazy to merge it with main
+Stupid bot code

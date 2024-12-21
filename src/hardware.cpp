@@ -18,16 +18,58 @@ pros::Rotation        vertical_encoder(11);
 lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_275, -2.5);
 
 // Drivetrain settings
-lemlib::Drivetrain  drivetrain(&left_motors, &right_motors, 16, lemlib::Omniwheel::NEW_4, 600, 2);
-lemlib::OdomSensors sensors(&vertical_tracking_wheel, nullptr, nullptr, nullptr, &imu);
+lemlib::Drivetrain  drivetrain(&left_motor_group,          // left motor group
+                               &right_motor_group,         // right motor group
+                               16,                         // 10 inch track width
+                               lemlib::Omniwheel::NEW_325, // using new 4" omnis
+                               600,                        // drivetrain rpm is 360
+                               2                           // horizontal drift is 2 (for now)
+ );
+lemlib::OdomSensors sensors(&vertical_tracking_wheel, // Vertical tracking wheel
+                            nullptr,                  // 2nd Vertical Tracking Wheel
+                            nullptr,                  // Horizontal Tracking wheel
+                            nullptr,                  // 2nd Horizontal tracking wheel
+                            &imu                      // IMU Sensor
+);
 
 // PID controllers
-lemlib::ControllerSettings lateral_controller(10, 0, 3, 0, 0, 0, 0, 0, 0);
-lemlib::ControllerSettings angular_controller(2, 0, 10, 0, 0, 0, 0, 0, 0);
+lemlib::ControllerSettings angular_controller(2,  // proportional gain (kP)
+                                              0,  // integral gain (kI)
+                                              10, // derivative gain (kD)
+                                              0,  // anti windup
+                                              0,  // small error range, in inches
+                                              0,  // small error range timeout, in milliseconds
+                                              0,  // large error range, in inches
+                                              0,  // large error range timeout, in milliseconds
+                                              0   // maximum acceleration (slew)
+);
+lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
+                                              0,  // integral gain (kI)
+                                              3,  // derivative gain (kD)
+                                              0,  // anti windup
+                                              0,  // small error range, in inches
+                                              0,  // small error range timeout, in milliseconds
+                                              0,  // large error range, in inches
+                                              0,  // large error range timeout, in milliseconds
+                                              0   // maximum acceleration (slew)
+);
 
-// Input curves
-lemlib::ExpoDriveCurve throttle_curve(3, 10, 1.019);
-lemlib::ExpoDriveCurve steer_curve(3, 10, 1.019);
+// Input curve for throttle input during driver control
+lemlib::ExpoDriveCurve throttle_curve(3,    // joystick deadband out of 127
+                                      10,   // minimum output where drivetrain will move out of 127
+                                      1.019 // expo curve gain
+);
 
-// Chassis
-lemlib::Chassis chassis(drivetrain, lateral_controller, angular_controller, sensors, &steer_curve, &throttle_curve);
+// Input curve for steer input during driver control
+lemlib::ExpoDriveCurve steer_curve(3,    // joystick deadband out of 127
+                                   10,   // minimum output where drivetrain will move out of 127
+                                   1.019 // expo curve gain
+);
+
+// Create the chassis
+lemlib::Chassis chassis(drivetrain,
+                        lateral_controller,
+                        angular_controller,
+                        sensors,
+                        &throttle_curve,
+                        &steer_curve);

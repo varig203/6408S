@@ -1,10 +1,29 @@
 #include "robot/hardware.hpp"
 
+/*
+// Subsystems
+- Drivetrain left = 11, 12, 13
+- Drivetrain right = 14, 15, 16
+- Primary intake = 1
+- Secondary intake = 2
+
+- Mogo Extend = A
+- Mogo Retract = B
+- Ladybrown = C
+
+// Sensors
+- IMU = 17
+- Vertical Encoder = 18
+- Horizontal Encoder = 19
+- Optical Sensor = 20
+- Radio = 21
+*/
+
 // Motor groups
-pros::MotorGroup left_motors({-14, -15, -19}, pros::MotorGearset::blue); // left motors on ports 14, 15, 19
-pros::MotorGroup right_motors({13, 16, 17}, pros::MotorGearset::blue);   // right motors on ports 13, 16, 17
-pros::Motor      primary_intake(20, pros::MotorGearset::blue);           // Primary Intake on port 20
-pros::Motor      secondary_intake(18, pros::MotorGearset::blue);         // Secondary Intake on port 18
+pros::MotorGroup left_motors({-11, -12, -13}, pros::MotorGearset::blue); // left motors on ports 14, 15, 19
+pros::MotorGroup right_motors({14, 15, 16}, pros::MotorGearset::blue);   // right motors on ports 13, 16, 17
+pros::Motor      primary_intake(1, pros::MotorGearset::blue);            // Primary Intake on port 20
+pros::Motor      secondary_intake(2, pros::MotorGearset::blue);          // Secondary Intake on port 18
 
 // Controller and Pistons
 pros::Controller      controller(pros::E_CONTROLLER_MASTER); // Initialize controller
@@ -13,9 +32,11 @@ pros::adi::DigitalOut pistonRetractMogo('B');                // Initialize the s
 pros::adi::DigitalOut pistonLB('C');                         // Initialize the LB mech
 
 // Sensors
-pros::Imu             imu(12); // IMU
-pros::Rotation        vertical_encoder(11);
-lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_275, -2.5);
+pros::Imu             imu(17); // IMU
+pros::Rotation        vertical_encoder(18);
+pros::Rotation        horizontal_encoder(19);
+lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_2, -2.5);
+lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder, lemlib::Omniwheel::NEW_2, 0);
 
 // Drivetrain settings
 lemlib::Drivetrain  drivetrain(&left_motor_group,          // left motor group
@@ -25,11 +46,11 @@ lemlib::Drivetrain  drivetrain(&left_motor_group,          // left motor group
                                600,                        // drivetrain rpm is 360
                                2                           // horizontal drift is 2 (for now)
  );
-lemlib::OdomSensors sensors(&vertical_tracking_wheel, // Vertical tracking wheel
-                            nullptr,                  // 2nd Vertical Tracking Wheel
-                            nullptr,                  // Horizontal Tracking wheel
-                            nullptr,                  // 2nd Horizontal tracking wheel
-                            &imu                      // IMU Sensor
+lemlib::OdomSensors sensors(&vertical_tracking_wheel,   // Vertical tracking wheel
+                            nullptr,                    // 2nd Vertical Tracking Wheel
+                            &horizontal_tracking_wheel, // Horizontal Tracking wheel
+                            nullptr,                    // 2nd Horizontal tracking wheel
+                            &imu                        // IMU Sensor
 );
 
 // PID controllers

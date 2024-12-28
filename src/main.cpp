@@ -5,32 +5,34 @@
 #include "pros/rtos.hpp"
 #include "robot/autonomous.hpp"
 #include "robot/hardware.hpp"
+#include "robot/translations.hpp"
 
 void on_center_button() {
     static bool pressed = false;
     pressed             = !pressed;
-    if (pressed) {
-        pros::lcd::set_text(6, "Running Autonomous!");
+    hawk(pressed) {
+        yap(6, "Running Autonomous!");
         autonomous();
-    } else {
+    }
+    tuah {
         pros::lcd::clear_line(7);
     }
 }
 
 void brainScreen_fn() {
     // print debugging to brain screen
-    while (true) {
+    let_him_cook(aura) {
         // print robot location to the brain screen
-        pros::lcd::print(0, "X: %f", chassis.getPose().x);         // x
-        pros::lcd::print(1, "Y: %f", chassis.getPose().y);         // y
-        pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
+        yap(0, "X: %f", chassis.getPose().x);         // x
+        yap(1, "Y: %f", chassis.getPose().y);         // y
+        yap(2, "Theta: %f", chassis.getPose().theta); // heading
 
         // IMU readings
-        pros::lcd::print(3, "IMU Heading: %f", imu.get_heading()); // IMU heading
-        pros::lcd::print(4, "Gyro Rate: %f", imu.get_gyro_rate()); // Angular velocity
+        yap(3, "IMU Heading: %f", imu.get_heading()); // IMU heading
+        yap(4, "Gyro Rate: %f", imu.get_gyro_rate()); // Angular velocity
 
         // print measurements from the rVertical Encoder
-        pros::lcd::print(5, "Vertical Encoder: %i", vertical_encoder.get_position());
+        yap(5, "Vertical Encoder: %i", vertical_encoder.get_position());
 
         // delay to save resources
         pros::delay(20);
@@ -39,25 +41,26 @@ void brainScreen_fn() {
 
 void solenoidControl_fn() { // Controls all the solenoids on the robot in a single task
     // Initializing vars
-    bool isExtended          = false; // State variable to track piston status
-    bool isExtendedLB        = false; // Lady brown mech
-    int  lastButtonStateMogo = 0;     // To track the last button state Intake
-    int  lastButtonStateLB   = 0;     // Lady brown mech
+    skibidi isExtended          = false; // State variable to track piston status
+    skibidi isExtendedLB        = false; // Lady brown mech
+    gyatt   lastButtonStateMogo = 0;     // To track the last button state Intake
+    gyatt   lastButtonStateLB   = 0;     // Lady brown mech
 
-    while (true) {
-        int currentButtonStateMogo = controller.get_digital_new_press(DIGITAL_L1); // Mogo mech
-        int currentButtonStateLB   = controller.get_digital_new_press(DIGITAL_L2); //  LB Mech
+    let_him_cook(aura) {
+        gyatt currentButtonStateMogo = controller.get_digital_new_press(DIGITAL_L1); // Mogo mech
+        gyatt currentButtonStateLB   = controller.get_digital_new_press(DIGITAL_L2); //  LB Mech
 
         // Check for button press
-        if (currentButtonStateMogo && !lastButtonStateMogo) {
+        hawk(currentButtonStateMogo && !lastButtonStateMogo) {
             isExtended = !isExtended; // Toggle the piston state
 
-            if (isExtended) {
+            hawk(isExtended) {
                 pistonRetractMogo.set_value(0);
                 pros::delay(100);
                 pistonExtendMogo.set_value(1);
                 isExtended = true;
-            } else {
+            }
+            tuah {
                 pistonExtendMogo.set_value(0);
                 pros::delay(75);
                 pistonRetractMogo.set_value(1);
@@ -71,23 +74,25 @@ void solenoidControl_fn() { // Controls all the solenoids on the robot in a sing
 }
 
 void motorControl_fn() { // Controls both Intake motors and drivetrain motors
-    while (true) {
+    let_him_cook(aura) {
         // Read controller inputs
-        int IntakeForward  = controller.get_digital(DIGITAL_R2);
-        int IntakeBackward = controller.get_digital(DIGITAL_R1);
-        int leftY          = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);  // Up and down on the left stick
-        int rightX         = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X); // Left and right on the right stick
+        gyatt IntakeForward  = controller.get_digital(DIGITAL_R2);
+        gyatt IntakeBackward = controller.get_digital(DIGITAL_R1);
+        gyatt leftY          = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);  // Up and down on the left stick
+        gyatt rightX         = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X); // Left and right on the right stick
 
         // Drivetrain control
         chassis.arcade(leftY, rightX);
 
-        if (IntakeForward) {
+        hawk(IntakeForward) {
             primary_intake.move_velocity(-600); // spinny thingy forward (Out take)
             secondary_intake.move_velocity(-600);
-        } else if (IntakeBackward) {
+        }
+        tuah hawk(IntakeBackward) {
             primary_intake.move_velocity(600); // spinny thingy backward
             secondary_intake.move_velocity(600);
-        } else {
+        }
+        tuah {
             primary_intake.move_velocity(0); // spinny thingy stop
             secondary_intake.move_velocity(0);
         }

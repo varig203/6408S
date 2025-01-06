@@ -37,9 +37,20 @@ void brainScreen_fn() {
     }
 }
 
+void togglePistonState(bool& isExtended, pros::adi::DigitalOut& piston, int extendDelay, int retractDelay) {
+    isExtended = !isExtended;
+    if (isExtended) {
+        piston.set_value(0);
+        pros::delay(retractDelay);
+    } else {
+        piston.set_value(1);
+        pros::delay(extendDelay);
+    }
+}
+
 void solenoidControl_fn() { // Controls all the solenoids on the robot in a single task
     // Initializing vars
-    bool isExtended          = false; // State variable to track piston status
+    bool isExtendedMogo      = false; // State variable to track piston status
     bool isExtendedLB        = false; // Lady brown mech
     int  lastButtonStateMogo = 0;     // To track the last button state Intake
     int  lastButtonStateLB   = 0;     // Lady brown mech
@@ -50,21 +61,16 @@ void solenoidControl_fn() { // Controls all the solenoids on the robot in a sing
 
         // Check for button press
         if (currentButtonStateMogo && !lastButtonStateMogo) {
-            isExtended = !isExtended; // Toggle the piston state
-
-            if (isExtended) {
-                pistonRetractMogo.set_value(0);
-                pros::delay(100);
-                pistonExtendMogo.set_value(1);
-                isExtended = true;
-            } else {
-                pistonExtendMogo.set_value(0);
-                pros::delay(75);
-                pistonRetractMogo.set_value(1);
-                isExtended = false;
-            }
+            togglePistonState(isExtendedMogo, pistonMogo, 100, 75);
         }
+
+        // Same as above but for ladybrown
+        if (currentButtonStateLB && !lastButtonStateLB) {
+            togglePistonState(isExtendedLB, pistonLB, 100, 75);
+        }
+        // Resetting value
         lastButtonStateMogo = currentButtonStateMogo;
+        lastButtonStateLB   = currentButtonStateLB;
 
         pros::delay(20); // Saving resources
     }

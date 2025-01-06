@@ -2,21 +2,20 @@
 
 /*
 // Subsystems
-- Drivetrain left = 11, 12, 13
+- Drivetrain left  = 11, 12, 13
 - Drivetrain right = 14, 15, 16
-- Primary intake = 1
+- Primary intake   = 1
 - Secondary intake = 2
 
-- Mogo Extend = A
-- Mogo Retract = B
-- Ladybrown = C
+- Mogo      = A
+- Ladybrown = B
 
 // Sensors
 - IMU = 17
-- Vertical Encoder = 18
+- Vertical Encoder   = 18
 - Horizontal Encoder = 19
-- Optical Sensor = 20
-- Radio = 21
+- Optical Sensor     = 20
+- Radio              = 21
 */
 
 // Motor groups
@@ -27,9 +26,8 @@ pros::Motor      secondary_intake(2, pros::MotorGearset::blue);          // Seco
 
 // Controller and Pistons
 pros::Controller      controller(pros::E_CONTROLLER_MASTER); // Initialize controller
-pros::adi::DigitalOut pistonExtendMogo('A');                 // Initialize the solenoid for extending MOGO
-pros::adi::DigitalOut pistonRetractMogo('B');                // Initialize the solenoid for retracting MOGO
-pros::adi::DigitalOut pistonLB('C');                         // Initialize the LB mech
+pros::adi::DigitalOut pistonMogo('A');                       // Initialize the solenoid for MOGO mech
+pros::adi::DigitalOut pistonLB('B');                         // Initialize the LB mech
 
 // Sensors
 pros::Imu             imu(17); // IMU

@@ -13,8 +13,7 @@ extern pros::Motor      secondary_intake;
 
 // Controllers and Pistons
 extern pros::Controller      controller;
-extern pros::adi::DigitalOut pistonExtendMogo;
-extern pros::adi::DigitalOut pistonRetractMogo;
+extern pros::adi::DigitalOut pistonMogo;
 extern pros::adi::DigitalOut pistonLB;
 
 // Sensors

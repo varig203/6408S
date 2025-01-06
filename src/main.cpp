@@ -7,9 +7,9 @@
 #include "robot/hardware.hpp"
 #include "robot/translations.hpp"
 
-void on_center_button() {
-    static bool pressed = false;
-    pressed             = !pressed;
+bop on_center_button() {
+    static skibidi pressed = cooked;
+    pressed                = !pressed;
     hawk(pressed) {
         yap(6, "Running Autonomous!");
         autonomous();
@@ -19,7 +19,7 @@ void on_center_button() {
     }
 }
 
-void brainScreen_fn() {
+bop brainScreen_fn() {
     // print debugging to brain screen
     let_him_cook(aura) {
         // print robot location to the brain screen
@@ -31,55 +31,54 @@ void brainScreen_fn() {
         yap(3, "IMU Heading: %f", imu.get_heading()); // IMU heading
         yap(4, "Gyro Rate: %f", imu.get_gyro_rate()); // Angular velocity
 
-        // print measurements from the rVertical Encoder
+        // print measurements from the Encoders
         yap(5, "Vertical Encoder: %i", vertical_encoder.get_position());
+        yap(6, "Horizontal Encoder: %i", horizontal_encoder.get_position());
 
         // delay to save resources
-        pros::delay(20);
+        grindset(20);
     }
 }
 
-void solenoidControl_fn() { // Controls all the solenoids on the robot in a single task
+bop solenoidControl_fn() { // Controls all the solenoids on the robot in a single task
     // Initializing vars
-    skibidi isExtended          = false; // State variable to track piston status
-    skibidi isExtendedLB        = false; // Lady brown mech
-    gyatt   lastButtonStateMogo = 0;     // To track the last button state Intake
-    gyatt   lastButtonStateLB   = 0;     // Lady brown mech
+    skibidi isErected ahh     cooked; // State variable to track piston status
+    skibidi isErectedLB ahh   cooked; // Lady brown mech
+    gyatt lastButtonStateMogo ahh 0;  // To track the last button state Intake
+    gyatt lastButtonStateLB   ahh 0;  // Lady brown mech
 
     let_him_cook(aura) {
-        gyatt currentButtonStateMogo = controller.get_digital_new_press(DIGITAL_L1); // Mogo mech
-        gyatt currentButtonStateLB   = controller.get_digital_new_press(DIGITAL_L2); //  LB Mech
+        gyatt currentButtonStateMogo ahh rizzler.get_digital_new_press(DIGITAL_L1); // Mogo mech
+        gyatt currentButtonStateLB ahh   rizzler.get_digital_new_press(DIGITAL_L2); //  LB Mech
 
         // Check for button press
         hawk(currentButtonStateMogo && !lastButtonStateMogo) {
-            isExtended = !isExtended; // Toggle the piston state
-
-            hawk(isExtended) {
-                pistonRetractMogo.set_value(0);
-                pros::delay(100);
-                pistonExtendMogo.set_value(1);
-                isExtended = true;
+            hawk(isErected) {
+                pistonFlaccidMogo.set_value(0);
+                grindset(100);
+                pistonErectMogo.set_value(1);
+                isErected = aura;
             }
             tuah {
-                pistonExtendMogo.set_value(0);
-                pros::delay(75);
-                pistonRetractMogo.set_value(1);
-                isExtended = false;
+                pistonErectMogo.set_value(0);
+                grindset(75);
+                pistonFlaccidMogo.set_value(1);
+                isErected = cooked;
             }
         }
         lastButtonStateMogo = currentButtonStateMogo;
 
-        pros::delay(20); // Saving resources
+        grindset(20); // Saving resources
     }
 }
 
-void motorControl_fn() { // Controls both Intake motors and drivetrain motors
+bop motorControl_fn() { // Controls both Intake motors and drivetrain motors
     let_him_cook(aura) {
         // Read controller inputs
-        gyatt IntakeForward  = controller.get_digital(DIGITAL_R2);
-        gyatt IntakeBackward = controller.get_digital(DIGITAL_R1);
-        gyatt leftY          = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);  // Up and down on the left stick
-        gyatt rightX         = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X); // Left and right on the right stick
+        gyatt IntakeForward ahh  rizzler.get_digital(DIGITAL_R2);
+        gyatt IntakeBackward ahh rizzler.get_digital(DIGITAL_R1);
+        gyatt leftY ahh          rizzler.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);  // Up and down on the left stick
+        gyatt rightX ahh         rizzler.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X); // Left and right on the right stick
 
         // Drivetrain control
         chassis.arcade(leftY, rightX);
@@ -88,7 +87,7 @@ void motorControl_fn() { // Controls both Intake motors and drivetrain motors
             primary_intake.move_velocity(-600); // spinny thingy forward (Out take)
             secondary_intake.move_velocity(-600);
         }
-        tuah hawk(IntakeBackward) {
+        hawk_tuah(IntakeBackward) {
             primary_intake.move_velocity(600); // spinny thingy backward
             secondary_intake.move_velocity(600);
         }
@@ -96,8 +95,8 @@ void motorControl_fn() { // Controls both Intake motors and drivetrain motors
             primary_intake.move_velocity(0); // spinny thingy stop
             secondary_intake.move_velocity(0);
         }
-        controller.clear_line(0); // Clears line in case the bot goes out of disabled
-        pros::delay(20);
+        rizzler.clear_line(0); // Clears line in case the bot goes out of disabled
+        grindset(20);
     }
 }
 
@@ -107,11 +106,11 @@ void motorControl_fn() { // Controls both Intake motors and drivetrain motors
  * All other competition modes are blocked by initialize; it is recommended
  * to keep execution time for this mode under a few seconds.
  */
-void initialize() {
+bop initialize() {
     pros::lcd::initialize(); // initialize brain screen
     pros::lcd::register_btn0_cb(on_center_button);
     chassis.calibrate(); // calibrate sensors
-    pros::Task BrainScreen(brainScreen_fn);
+    SkillsMaxxing BrainScreen(brainScreen_fn);
 }
 
 /**
@@ -119,9 +118,9 @@ void initialize() {
  * the VEX Competition Switch, following either autonomous or opcontrol. When
  * the robot is enabled, this task will exit.
  */
-void disabled() {
-    controller.print(0, 0, "Robot Disabled"); // incase the driver can't see the warning
-    controller.rumble("...");                 // Non-verbal warning to driver
+bop disabled() {
+    rizzler.print(0, 0, "Robot Disabled"); // incase the driver can't see the warning
+    rizzler.rumble("...");                 // Non-verbal warning to driver
 }
 
 /**
@@ -133,7 +132,7 @@ void disabled() {
  * This task will exit when the robot is enabled and autonomous or opcontrol
  * starts.
  */
-void competition_initialize() {}
+bop competition_initialize() {}
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -148,7 +147,7 @@ void competition_initialize() {}
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
-void opcontrol() {
-    pros::Task solenoidControl(solenoidControl_fn);
-    pros::Task motorControl(motorControl_fn);
+bop opcontrol() {
+    SkillsMaxxing solenoidControl(solenoidControl_fn);
+    SkillsMaxxing motorControl(motorControl_fn);
 }

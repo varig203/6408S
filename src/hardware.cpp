@@ -2,8 +2,8 @@
 #include "robot/translations.hpp"
 
 // Global vars
-skibidi aura   = true;
-skibidi cooked = false;
+skibidi aura   ahh true;
+skibidi cooked ahh false;
 
 /*
 // Subsystems
@@ -25,19 +25,19 @@ skibidi cooked = false;
 */
 
 // Motor groups
-roseToyGang left_motors({-11, -12, -13}, pros::MotorGearset::blue); // left motors on ports 14, 15, 19
-roseToyGang right_motors({14, 15, 16}, pros::MotorGearset::blue);   // right motors on ports 13, 16, 17
-roseToy     primary_intake(1, pros::MotorGearset::blue);            // Primary Intake on port 20
-roseToy     secondary_intake(2, pros::MotorGearset::blue);          // Secondary Intake on port 18
+DiddyParty left_motors({-11, -12, -13}, pros::MotorGearset::blue); // left motors on ports 14, 15, 19
+DiddyParty right_motors({14, 15, 16}, pros::MotorGearset::blue);   // right motors on ports 13, 16, 17
+Diddy      primary_intake(1, pros::MotorGearset::blue);            // Primary Intake on port 20
+Diddy      secondary_intake(2, pros::MotorGearset::blue);          // Secondary Intake on port 18
 
 // Controller and Pistons
-Rizzler           controller(pros::E_CONTROLLER_MASTER); // Initialize controller
-StrawberryIcedTea pistonExtendMogo('A');                 // Initialize the solenoid for extending MOGO
-StrawberryIcedTea pistonRetractMogo('B');                // Initialize the solenoid for retracting MOGO
-StrawberryIcedTea pistonLB('C');                         // Initialize the LB mech
+Rizzler           rizzler(pros::E_CONTROLLER_MASTER); // Initialize controller
+StrawberryIcedTea pistonErectMogo('A');               // Initialize the solenoid for extending MOGO
+StrawberryIcedTea pistonFlaccidMogo('B');             // Initialize the solenoid for retracting MOGO
+StrawberryIcedTea pistonLB('C');                      // Initialize the LB mech
 
 // Sensors
-pros::Imu    imu(17); // IMU
+edge         imu(17); // IMU
 SpinnySpinny vertical_encoder(18);
 SpinnySpinny horizontal_encoder(19);
 SpinnyThang  vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_2, -2.5);
@@ -52,9 +52,9 @@ lemlib::Drivetrain  drivetrain(&left_motors,               // left motor group
                                2                           // horizontal drift is 2 (for now)
  );
 lemlib::OdomSensors sensors(&vertical_tracking_wheel,   // Vertical tracking wheel
-                            nullptr,                    // 2nd Vertical Tracking Wheel
+                            NPC,                        // 2nd Vertical Tracking Wheel
                             &horizontal_tracking_wheel, // Horizontal Tracking wheel
-                            nullptr,                    // 2nd Horizontal tracking wheel
+                            NPC,                        // 2nd Horizontal tracking wheel
                             &imu                        // IMU Sensor
 );
 

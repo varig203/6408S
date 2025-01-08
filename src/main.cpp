@@ -1,16 +1,16 @@
 #include "main.h"
-#include "pros/adi.hpp"
 #include "pros/llemu.hpp"
 #include "pros/misc.h"
 #include "pros/rtos.hpp"
 #include "robot/autonomous.hpp"
 #include "robot/hardware.hpp"
+#include "robot/reuseFunc.hpp"
 
 void on_center_button() {
     static bool pressed = false;
     pressed             = !pressed;
     if (pressed) {
-        pros::lcd::set_text(6, "Running Autonomous!");
+        pros::lcd::set_text(6, "Running Autonomous!"); // Forced std string cause clang
         autonomous();
     } else {
         pros::lcd::clear_line(7);
@@ -34,18 +34,6 @@ void brainScreen_fn() {
 
         // delay to save resources
         pros::delay(20);
-    }
-}
-
-// Reusable function as this is used everytime I want to switch a piston
-void togglePistonState(bool& isExtended, pros::adi::DigitalOut& piston, int extendDelay, int retractDelay) {
-    isExtended = !isExtended;
-    if (isExtended) {
-        piston.set_value(0);
-        pros::delay(retractDelay);
-    } else {
-        piston.set_value(1);
-        pros::delay(extendDelay);
     }
 }
 

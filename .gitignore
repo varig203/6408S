@@ -15,6 +15,5 @@ temp.log
 temp.errors
 *.ini
 .d/
-.clang-tidy
 .editorconfig
 .gitattributes

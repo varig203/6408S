@@ -1,0 +1,18 @@
+CompileFlags:
+  Add:
+    # Use ARM architecture and toolchain settings
+    - "-target"
+    - "arm-none-eabi"         # ARM target architecture for embedded systems
+    - "-mcpu=cortex-a9"        # ARM CPU type (e.g., Cortex-A9, adjust as needed)
+    - "-mfloat-abi=softfp"     # Floating-point ABI for embedded systems
+    - "-DPROS"                 # Define any macros needed for your toolchain/platform
+
+    # Include paths for ARM-specific libraries and headers
+    - "-I${workspaceFolder}/include"  # Path to your project headers
+    - "-I/home/daniel/Documents/School Stuff/Robotics 12/Robot LemLibTest/include"  # Additional include directory
+    - "-I/home/daniel/.config/VSCodium/User/globalStorage/sigbots.pros/install/pros-toolchain-linux/include"  # PROS toolchain includes
+    - "-I/usr/lib/gcc/arm-none-eabi/14.1.0/include"  # GCC ARM toolchain include directory
+
+    # Ensure C++20 standard and any specific features you need
+    - "-std=c++20"
+    - "-stdlib=libc++"  # If using libc++ with ARM toolchain

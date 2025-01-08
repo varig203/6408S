@@ -13,15 +13,13 @@
  * from where it left off.
  */
 ASSET(test_txt); // Auto test
-ASSET(test2_txt);
 
 void autonomous() {
     // Simple straight line
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
     chassis.setPose(0, 0, 0);
     chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
-    chassis.follow(test_txt, 20, 2000);
+    chassis.follow(test_txt, 15, 2000);
     pros::delay(600);
     chassis.cancelAllMotions();
 }
-

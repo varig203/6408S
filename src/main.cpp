@@ -37,6 +37,7 @@ void brainScreen_fn() {
     }
 }
 
+// Reusable function as this is used everytime I want to switch a piston
 void togglePistonState(bool& isExtended, pros::adi::DigitalOut& piston, int extendDelay, int retractDelay) {
     isExtended = !isExtended;
     if (isExtended) {
@@ -66,7 +67,7 @@ void solenoidControl_fn() { // Controls all the solenoids on the robot in a sing
 
         // Same as above but for ladybrown
         if (currentButtonStateLB && !lastButtonStateLB) {
-            togglePistonState(isExtendedLB, pistonLB, 100, 75);
+            togglePistonState(isExtendedLB, pistonLB, 50, 50);
         }
         // Resetting value
         lastButtonStateMogo = currentButtonStateMogo;

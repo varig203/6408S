@@ -91,12 +91,7 @@ void motorControl_fn() { // Controls both Intake motors and drivetrain motors
     }
 }
 
-/**
- * Runs initialization code. This occurs as soon as the program is started.
- *
- * All other competition modes are blocked by initialize; it is recommended
- * to keep execution time for this mode under a few seconds.
- */
+// Runs initialization code when the program starts; all other competition modes are blocked, keep exec under few seconds
 void initialize() {
     pros::lcd::initialize(); // initialize brain screen
     pros::lcd::register_btn0_cb(on_center_button);
@@ -104,11 +99,7 @@ void initialize() {
     pros::Task BrainScreen(brainScreen_fn);
 }
 
-/**
- * Runs while the robot is in the disabled state of Field Management System or
- * the VEX Competition Switch, following either autonomous or opcontrol. When
- * the robot is enabled, this task will exit.
- */
+// Runs while the robot is disabled, following autonomous or opcontrol, and exits when the robot is enabled.
 void disabled() {
     controller.print(0, 0, "Robot Disabled"); // incase the driver can't see the warning
     controller.rumble("...");                 // Non-verbal warning to driver
@@ -123,21 +114,11 @@ void disabled() {
  * This task will exit when the robot is enabled and autonomous or opcontrol
  * starts.
  */
-void competition_initialize() {}
+void competition_initialize() {
 
-/**
- * Runs the operator control code. This function will be started in its own task
- * with the default priority and stack size whenever the robot is enabled via
- * the Field Management System or the VEX Competition Switch in the operator
- * control mode.
- *
- * If no competition control is connected, this function will run immediately
- * following initialize().
- *
- * If the robot is disabled or communications is lost, the
- * operator control task will be stopped. Re-enabling the robot will restart the
- * task, not resume it from where it left off.
- */
+}
+
+// Runs the operator control code in its own task when the robot is enabled, stops if disabled or comms lost.
 void opcontrol() {
     pros::Task solenoidControl(solenoidControl_fn);
     pros::Task motorControl(motorControl_fn);

@@ -2,20 +2,8 @@
 #include "pros/llemu.hpp"
 #include "pros/misc.h"
 #include "pros/rtos.hpp"
-#include "robot/autonomous.hpp"
 #include "robot/hardware.hpp"
 #include "robot/reuseFunc.hpp"
-
-void on_center_button() {
-    static bool pressed = false;
-    pressed             = !pressed;
-    if (pressed) {
-        pros::lcd::set_text(6, "Running Autonomous!"); // Forced std string cause clang
-        autonomous();
-    } else {
-        pros::lcd::clear_line(7);
-    }
-}
 
 void brainScreen_fn() {
     // print debugging to brain screen
@@ -94,7 +82,6 @@ void motorControl_fn() { // Controls both Intake motors and drivetrain motors
 // Runs initialization code when the program starts; all other competition modes are blocked, keep exec under few seconds
 void initialize() {
     pros::lcd::initialize(); // initialize brain screen
-    pros::lcd::register_btn0_cb(on_center_button);
     chassis.calibrate(); // calibrate sensors
     pros::Task BrainScreen(brainScreen_fn);
 }

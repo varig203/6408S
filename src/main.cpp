@@ -1,29 +1,29 @@
 #include "main.h"
-#include "pros/llemu.hpp"
 #include "pros/misc.h"
 #include "pros/rtos.hpp"
 #include "robot/hardware.hpp"
 #include "robot/reuseFunc.hpp"
+#include "robot/autonSelector.hpp"
 
-void brainScreen_fn() {
-    // print debugging to brain screen
-    while (true) {
-        // print robot location to the brain screen
-        pros::lcd::print(0, "X: %f", chassis.getPose().x);         // x
-        pros::lcd::print(1, "Y: %f", chassis.getPose().y);         // y
-        pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
+// void brainScreen_fn() {
+//     // print debugging to brain screen
+//     while (true) {
+//         // print robot location to the brain screen
+//         pros::lcd::print(0, "X: %f", chassis.getPose().x);         // x
+//         pros::lcd::print(1, "Y: %f", chassis.getPose().y);         // y
+//         pros::lcd::print(2, "Theta: %f", chassis.getPose().theta); // heading
 
-        // IMU readings
-        pros::lcd::print(3, "IMU Heading: %f", imu.get_heading()); // IMU heading
-        pros::lcd::print(4, "Gyro Rate: %f", imu.get_gyro_rate()); // Angular velocity
+//         // IMU readings
+//         pros::lcd::print(3, "IMU Heading: %f", imu.get_heading()); // IMU heading
+//         pros::lcd::print(4, "Gyro Rate: %f", imu.get_gyro_rate()); // Angular velocity
 
-        // print measurements from the rVertical Encoder
-        pros::lcd::print(5, "Vertical Encoder: %i", vertical_encoder.get_position());
+//         // print measurements from the rVertical Encoder
+//         pros::lcd::print(5, "Vertical Encoder: %i", vertical_encoder.get_position());
 
-        // delay to save resources
-        pros::delay(20);
-    }
-}
+//         // delay to save resources
+//         pros::delay(20);
+//     }
+// }
 
 void solenoidControl_fn() { // Controls all the solenoids on the robot in a single task
     // Initializing vars
@@ -81,9 +81,8 @@ void motorControl_fn() { // Controls both Intake motors and drivetrain motors
 
 // Runs initialization code when the program starts; all other competition modes are blocked, keep exec under few seconds
 void initialize() {
-    pros::lcd::initialize(); // initialize brain screen
     chassis.calibrate(); // calibrate sensors
-    pros::Task BrainScreen(brainScreen_fn);
+    autonSelector_fn();
 }
 
 // Runs while the robot is disabled, following autonomous or opcontrol, and exits when the robot is enabled.
@@ -102,7 +101,7 @@ void disabled() {
  * starts.
  */
 void competition_initialize() {
-
+    //pros::Task autonSelector(autonSelector_fn);
 }
 
 // Runs the operator control code in its own task when the robot is enabled, stops if disabled or comms lost.

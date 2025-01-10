@@ -35,7 +35,6 @@
 #define PROS_USE_LITERALS
 
 #include "api.h"
-#include "Master-Selector/api.hpp"
 
 /**
  * You should add more #includes here

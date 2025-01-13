@@ -14,12 +14,14 @@
  */
 ASSET(test_txt); // Auto test
 
-void autonomous() {
-    // Simple straight line
-    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
-    chassis.setPose(0, 0, 0);
-    chassis.setBrakeMode(pros::E_MOTOR_BRAKE_BRAKE);
-    chassis.follow(test_txt, 15, 2000);
-    pros::delay(600);
-    chassis.cancelAllMotions();
-}
+void autonomous() {}
+
+void matchAutonRedLeft() {}
+
+void matchAutonRedRight() {}
+
+void matchAutonBlueLeft() {}
+
+void matchAutonBlueRight() {}
+
+void skillsAuton() {}

@@ -16,6 +16,9 @@ public:
      */
     Category(std::string name, const std::vector <Auton> &autons);
 
+    // Default constructor for empty initialization
+    Category() : name(""), autons() {}
+
     /** @brief The name of the category */
     std::string name;
 

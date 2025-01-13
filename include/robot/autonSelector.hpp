@@ -15,6 +15,4 @@ void create_skills_autons_screen();
 void create_debug_screen();
 void update_debug_info();
 
-extern void autonSelector_fn();
-
 #endif // AUTONSELECTOR_HPP

@@ -100,3 +100,24 @@ void update_debug_info() {
     // Update the label with new data
     lv_label_set_text(label_debug, debug_text);
 }
+
+// Main function to create the auton selector UI
+void create_auton_selector() {
+    // Create the screens and their respective content
+    create_match_autons_screen();
+    create_skills_autons_screen();
+    create_debug_screen();
+
+    // Create the buttons on the home screen to navigate between the pages
+    create_buttons();
+
+    // Initially, load the home screen
+    lv_scr_load(lv_scr_act());
+    while (true) {
+        lv_task_handler();  // Handle LVGL tasks (events, updates)
+        pros::delay(5);  // Sleep for a short time (for smoother LVGL updates)
+
+        // Update the debug info with sensor readings
+        update_debug_info();
+    }
+}

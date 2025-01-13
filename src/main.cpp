@@ -82,7 +82,7 @@ void motorControl_fn() { // Controls both Intake motors and drivetrain motors
 // Runs initialization code when the program starts; all other competition modes are blocked, keep exec under few seconds
 void initialize() {
     chassis.calibrate(); // calibrate sensors
-    autonSelector_fn();
+    pros::Task autonSelector(create_auton_selector);
 }
 
 // Runs while the robot is disabled, following autonomous or opcontrol, and exits when the robot is enabled.

@@ -2,7 +2,6 @@
 #include <functional>
 #include <string>
 
-
 namespace ms {
 
 class Auton {

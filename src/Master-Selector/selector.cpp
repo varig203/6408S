@@ -1,4 +1,5 @@
 #include "Master-Selector/selector.hpp"
+#include "liblvgl/core/lv_disp.h"
 #include "liblvgl/extra/themes/default/lv_theme_default.h"
 #include "liblvgl/misc/lv_area.h"
 
@@ -13,7 +14,7 @@ std::map<lv_obj_t*, ms::Category*> btnm_to_category;
 void ms::set_autons(const std::vector<ms::Category>& categories) {
     auton_categories = categories;
     if (!auton_categories.empty() && !auton_categories[0].autons.empty()) {
-        auto selected_auton = std::make_shared<ms::Auton>(auton_categories[0].autons[0]);
+        selected_auton = std::make_shared<ms::Auton>(auton_categories[0].autons[0]);
     }
 }
 
@@ -36,7 +37,8 @@ void button_action(lv_event_t* e) {
 
         for (ms::Auton& auton : category->autons) {
             if (strcmp(auton.name.c_str(), txt) == 0) {
-                auto selected_auton = std::make_shared<ms::Auton>(auton);
+                //auto selected_auton = std::make_shared(new <ms::Auton>(auton));
+                selected_auton = std::make_shared<ms::Auton>(auton.name, auton.callback);
                 break;
             }
         }
@@ -72,12 +74,13 @@ void ms::initialize(int autons_per_row) {
     lv_disp_t* disp = lv_disp_get_default();
 
     // Define theme colors
-    lv_color_t primary_color = lv_color_hex(0x1E90FF);
-    lv_color_t secondary_color = lv_color_hex(0x32CD32);
+    lv_color_t primary_color = lv_color_hex(0xFF00F8); // Tab Colour
+    lv_color_t secondary_color = lv_color_hex(0x00BCFF);
     bool dark_theme = true;
     const lv_font_t* font = &lv_font_montserrat_16;
 
     lv_theme_t* theme = lv_theme_default_init(disp, primary_color, secondary_color, dark_theme, font);
+    lv_disp_set_theme(disp, theme);
 
     // Create the tab view
     tabview = lv_tabview_create(lv_scr_act(), LV_DIR_TOP, 30);

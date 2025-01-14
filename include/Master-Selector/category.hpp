@@ -3,7 +3,6 @@
 #include <vector>
 #include "auton.hpp"
 
-
 namespace ms {
 
 class Category {

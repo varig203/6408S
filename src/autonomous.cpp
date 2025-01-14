@@ -1,4 +1,5 @@
 #include "robot/autonomous.hpp"
+#include "main.h"
 #include "robot/hardware.hpp"
 
 /**
@@ -12,16 +13,13 @@
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-ASSET(test_txt); // Auto test
 
-void autonomous() {}
+void rNear_side_awp() {}
 
-void matchAutonRedLeft() {}
+void rFar_side_awp() {}
 
-void matchAutonRedRight() {}
+void bNear_side_awp() {}
 
-void matchAutonBlueLeft() {}
+void bFar_side_awp() {}
 
-void matchAutonBlueRight() {}
-
-void skillsAuton() {}
+void skills() {}

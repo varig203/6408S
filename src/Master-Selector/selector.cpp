@@ -1,5 +1,4 @@
 #include "Master-Selector/selector.hpp"
-#include "liblvgl/core/lv_disp.h"
 #include "liblvgl/extra/themes/default/lv_theme_default.h"
 #include "liblvgl/misc/lv_area.h"
 
@@ -14,7 +13,7 @@ std::map<lv_obj_t*, ms::Category*> btnm_to_category;
 void ms::set_autons(const std::vector<ms::Category>& categories) {
     auton_categories = categories;
     if (!auton_categories.empty() && !auton_categories[0].autons.empty()) {
-        selected_auton = std::make_shared<ms::Auton>(auton_categories[0].autons[0]);
+        auto selected_auton = std::make_shared<ms::Auton>(auton_categories[0].autons[0]);
     }
 }
 
@@ -38,7 +37,7 @@ void button_action(lv_event_t* e) {
         for (ms::Auton& auton : category->autons) {
             if (strcmp(auton.name.c_str(), txt) == 0) {
                 //auto selected_auton = std::make_shared(new <ms::Auton>(auton));
-                selected_auton = std::make_shared<ms::Auton>(auton.name, auton.callback);
+                auto selected_auton = std::make_shared<ms::Auton>(auton.name, auton.callback);
                 break;
             }
         }
@@ -53,7 +52,7 @@ void handle_tab_change() {
         int current_tab = lv_tabview_get_tab_act(tabview);
 
         if (current_tab != previous_tab) {
-            selected_auton = std::make_shared<ms::Auton>(auton_categories[current_tab].autons[0]);
+            auto selected_auton = std::make_shared<ms::Auton>(auton_categories[current_tab].autons[0]);
 
             lv_obj_t* btnm = btnms[previous_tab];
             const char** btn_map = lv_btnmatrix_get_map(btnm);
@@ -80,7 +79,7 @@ void ms::initialize(int autons_per_row) {
     const lv_font_t* font = &lv_font_montserrat_16;
 
     lv_theme_t* theme = lv_theme_default_init(disp, primary_color, secondary_color, dark_theme, font);
-    lv_disp_set_theme(disp, theme);
+    //lv_disp_set_theme(disp, theme);
 
     // Create the tab view
     tabview = lv_tabview_create(lv_scr_act(), LV_DIR_TOP, 30);

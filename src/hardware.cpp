@@ -20,7 +20,7 @@
 
 // Motor groups
 pros::MotorGroup left_motors({-11, -12, -13}, pros::MotorGearset::blue); // left motors on ports 14, 15, 19
-pros::MotorGroup right_motors({14, 15, 16}, pros::MotorGearset::blue);   // right motors on ports 13, 16, 17
+pros::MotorGroup right_motors({1, 2, 3}, pros::MotorGearset::blue);   // right motors on ports 13, 16, 17
 pros::Motor      primary_intake(1, pros::MotorGearset::blue);            // Primary Intake on port 20
 pros::Motor      secondary_intake(2, pros::MotorGearset::blue);          // Secondary Intake on port 18
 

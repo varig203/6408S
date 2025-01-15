@@ -47,23 +47,6 @@
                 "user_files": [],
                 "version": "0.5.4"
             },
-            "gif-pros": {
-                "location": "/home/daniel/.config/pros/templates/gif-pros@3.0.1",
-                "metadata": {
-                    "origin": "local"
-                },
-                "name": "gif-pros",
-                "py/object": "pros.conductor.templates.local_template.LocalTemplate",
-                "supported_kernels": "^4.1.0",
-                "system_files": [
-                    "include/gif-pros/gifdec.h",
-                    "include/gif-pros/gifclass.hpp",
-                    "firmware/gif-pros.a"
-                ],
-                "target": "v5",
-                "user_files": [],
-                "version": "3.0.1"
-            },
             "kernel": {
                 "location": "/home/daniel/.config/pros/templates/kernel@4.1.1",
                 "metadata": {

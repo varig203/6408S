@@ -1,6 +1,6 @@
-# V5 6048S
+# V5 6048S | High Stakes 2024-2025
 
-Stupid bot code
+This bot code includes multithreading and mechanisms for solenoid control and chassis and intake control. The version of everything included is PROS 4.1.1 and LemLib 0.5.5
 
 ## Licensing
 

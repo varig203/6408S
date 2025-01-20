@@ -87,7 +87,7 @@ void disabled() {
 }
 
 void autonomous() {
-    ms::call_selected_auton();
+    ms::call_selected_auton(); // Run selected auton routine
 }
 
 /**

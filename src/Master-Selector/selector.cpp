@@ -13,7 +13,7 @@ std::map<lv_obj_t*, ms::Category*> btnm_to_category;
 void ms::set_autons(const std::vector<ms::Category>& categories) {
     auton_categories = categories;
     if (!auton_categories.empty() && !auton_categories[0].autons.empty()) {
-        auto selected_auton = std::make_shared<ms::Auton>(auton_categories[0].autons[0]);
+        selected_auton = std::make_shared<ms::Auton>(auton_categories[0].autons[0]);
     }
 }
 
@@ -36,8 +36,7 @@ void button_action(lv_event_t* e) {
 
         for (ms::Auton& auton : category->autons) {
             if (strcmp(auton.name.c_str(), txt) == 0) {
-                //auto selected_auton = std::make_shared(new <ms::Auton>(auton));
-                auto selected_auton = std::make_shared<ms::Auton>(auton.name, auton.callback);
+                selected_auton = std::make_shared<ms::Auton>(auton.name, auton.callback);
                 break;
             }
         }
@@ -52,7 +51,7 @@ void handle_tab_change() {
         int current_tab = lv_tabview_get_tab_act(tabview);
 
         if (current_tab != previous_tab) {
-            auto selected_auton = std::make_shared<ms::Auton>(auton_categories[current_tab].autons[0]);
+            selected_auton = std::make_shared<ms::Auton>(auton_categories[current_tab].autons[0]);
 
             lv_obj_t* btnm = btnms[previous_tab];
             const char** btn_map = lv_btnmatrix_get_map(btnm);
@@ -88,30 +87,28 @@ void ms::initialize(int autons_per_row) {
         lv_obj_t* category_tab = lv_tabview_add_tab(tabview, category.name.c_str());
         lv_obj_t* category_btnm = lv_btnmatrix_create(category_tab);
 
-        size_t num_autons = category.autons.size();
-        size_t auton_buttons_size = num_autons + num_autons / autons_per_row + 1;
-        const char** auton_buttons = new const char*[auton_buttons_size];
+        // Store button texts in a vector to ensure persistence
+        std::vector<std::string> button_texts; // For managing memory of button strings
+        std::vector<const char*> auton_buttons; // For storing the map
 
-        size_t i = 0, autonIndex = 0;
-        for (; i < auton_buttons_size - 1; i++) {
-            if (i != 0 && i % autons_per_row == 0) {
-                auton_buttons[i] = "\n"; // Line break
-            } else {
-                auton_buttons[i] = category.autons[autonIndex++].name.c_str();
-            }
+        for (ms::Auton& auton : category.autons) {
+            button_texts.push_back(auton.name); // Store button names
+            auton_buttons.push_back(button_texts.back().c_str()); // Use c_str() for LVGL
         }
 
-        auton_buttons[auton_buttons_size - 1] = NULL; // End of map
+        // Add line breaks and NULL terminator
+        for (size_t i = 1; i <= auton_buttons.size() / autons_per_row; ++i) {
+            auton_buttons.insert(auton_buttons.begin() + i * autons_per_row + (i - 1), "\n");
+        }
+        auton_buttons.push_back(NULL); // End of map
 
-        lv_btnmatrix_set_map(category_btnm, auton_buttons);
+        lv_btnmatrix_set_map(category_btnm, auton_buttons.data());
         lv_obj_add_event_cb(category_btnm, button_action, LV_EVENT_VALUE_CHANGED, NULL);
         lv_obj_set_size(category_btnm, 450, 50);
         lv_obj_align(category_btnm, LV_ALIGN_CENTER, 0, 0);
 
         btnms.push_back(category_btnm);
         btnm_to_category[category_btnm] = &category;
-
-        delete[] auton_buttons;
     }
 
     pros::Task handle_tab_change_task(handle_tab_change);

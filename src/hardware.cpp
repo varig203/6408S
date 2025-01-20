@@ -2,10 +2,10 @@
 
 /*
 // Subsystems
-- Drivetrain left  = 11, 12, 13
-- Drivetrain right = 14, 15, 16
-- Primary intake   = 1
-- Secondary intake = 2
+- Drivetrain left  = 4, 5, 6
+- Drivetrain right = 1, 2, 3
+- Primary intake   = 7
+- Secondary intake = 8
 
 - Mogo      = A
 - Ladybrown = B
@@ -19,10 +19,10 @@
 */
 
 // Motor groups
-pros::MotorGroup left_motors({-11, -12, -13}, pros::MotorGearset::blue); // left motors on ports 14, 15, 19
-pros::MotorGroup right_motors({1, 2, 3}, pros::MotorGearset::blue);   // right motors on ports 13, 16, 17
-pros::Motor      primary_intake(1, pros::MotorGearset::blue);            // Primary Intake on port 20
-pros::Motor      secondary_intake(2, pros::MotorGearset::blue);          // Secondary Intake on port 18
+pros::MotorGroup left_motors({-4, -5, -6}, pros::MotorGearset::blue); // left motors on ports 4, 5, 6
+pros::MotorGroup right_motors({1, 2, 3}, pros::MotorGearset::blue);   // right motors on ports 1, 2, 3
+pros::Motor      primary_intake(7, pros::MotorGearset::blue);            // Primary Intake on port 7
+pros::Motor      secondary_intake(8, pros::MotorGearset::blue);          // Secondary Intake on port 8
 
 // Controller and Pistons
 pros::Controller      controller(pros::E_CONTROLLER_MASTER); // Initialize controller

@@ -72,13 +72,12 @@ void ms::initialize(int autons_per_row) {
     lv_disp_t* disp = lv_disp_get_default();
 
     // Define theme colors
-    lv_color_t primary_color = lv_color_hex(0xFF00F8); // Tab Colour
-    lv_color_t secondary_color = lv_color_hex(0x00BCFF);
+    lv_color_t primary_color = lv_color_hex(0x1E90FF);
+    lv_color_t secondary_color = lv_color_hex(0x32CD32);
     bool dark_theme = true;
     const lv_font_t* font = &lv_font_montserrat_16;
 
     lv_theme_t* theme = lv_theme_default_init(disp, primary_color, secondary_color, dark_theme, font);
-    //lv_disp_set_theme(disp, theme);
 
     // Create the tab view
     tabview = lv_tabview_create(lv_scr_act(), LV_DIR_TOP, 30);
@@ -87,28 +86,30 @@ void ms::initialize(int autons_per_row) {
         lv_obj_t* category_tab = lv_tabview_add_tab(tabview, category.name.c_str());
         lv_obj_t* category_btnm = lv_btnmatrix_create(category_tab);
 
-        // Store button texts in a vector to ensure persistence
-        std::vector<std::string> button_texts; // For managing memory of button strings
-        std::vector<const char*> auton_buttons; // For storing the map
+        size_t num_autons = category.autons.size();
+        size_t auton_buttons_size = num_autons + num_autons / autons_per_row + 1;
+        const char** auton_buttons = new const char*[auton_buttons_size];
 
-        for (ms::Auton& auton : category.autons) {
-            button_texts.push_back(auton.name); // Store button names
-            auton_buttons.push_back(button_texts.back().c_str()); // Use c_str() for LVGL
+        size_t i = 0, autonIndex = 0;
+        for (; i < auton_buttons_size - 1; i++) {
+            if (i != 0 && i % autons_per_row == 0) {
+                auton_buttons[i] = "\n"; // Line break
+            } else {
+                auton_buttons[i] = category.autons[autonIndex++].name.c_str();
+            }
         }
 
-        // Add line breaks and NULL terminator
-        for (size_t i = 1; i <= auton_buttons.size() / autons_per_row; ++i) {
-            auton_buttons.insert(auton_buttons.begin() + i * autons_per_row + (i - 1), "\n");
-        }
-        auton_buttons.push_back(NULL); // End of map
+        auton_buttons[auton_buttons_size - 1] = NULL; // End of map
 
-        lv_btnmatrix_set_map(category_btnm, auton_buttons.data());
+        lv_btnmatrix_set_map(category_btnm, auton_buttons);
         lv_obj_add_event_cb(category_btnm, button_action, LV_EVENT_VALUE_CHANGED, NULL);
         lv_obj_set_size(category_btnm, 450, 50);
         lv_obj_align(category_btnm, LV_ALIGN_CENTER, 0, 0);
 
         btnms.push_back(category_btnm);
         btnm_to_category[category_btnm] = &category;
+
+        delete[] auton_buttons;
     }
 
     pros::Task handle_tab_change_task(handle_tab_change);

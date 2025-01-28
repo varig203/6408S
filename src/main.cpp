@@ -46,10 +46,10 @@ void motorControl_fn() { // Controls both Intake motors and drivetrain motors
 
         if (IntakeForward) {
             primary_intake.move_velocity(-600); // spinny thingy forward (Out take)
-            secondary_intake.move_velocity(-600);
+            secondary_intake.move_velocity(600);
         } else if (IntakeBackward) {
             primary_intake.move_velocity(600); // spinny thingy backward
-            secondary_intake.move_velocity(600);
+            secondary_intake.move_velocity(-600);
         } else {
             primary_intake.move_velocity(0); // spinny thingy stop
             secondary_intake.move_velocity(0);
@@ -77,7 +77,7 @@ void initialize() {
             ms::Auton("Skills", skills)
         })
     });
-    ms::initialize();
+    //ms::initialize();
 }
 
 // Runs while the robot is disabled, following autonomous or opcontrol, and exits when the robot is enabled.

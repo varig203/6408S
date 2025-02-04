@@ -1,5 +1,8 @@
 #include "Master-Selector/auton.hpp"
 
+namespace ms {
 
-ms::Auton::Auton(std::string name, const std::function<void()>& callback)
-    : name(name), callback(callback) {}
+Auton::Auton(std::string name, const std::function<void()>& callback)
+    : name(std::move(name)), callback(callback) {}
+
+}

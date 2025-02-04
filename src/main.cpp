@@ -50,7 +50,7 @@ void initialize() {
             ms::Auton("Skills", skills)
         })
     });
-    //ms::initialize(); // Comment out when in prod
+    ms::initialize(); // Comment out when in prod
 }
 
 // Runs while the robot is disabled, following autonomous or opcontrol, and exits when the robot is enabled.

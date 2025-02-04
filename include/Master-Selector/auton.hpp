@@ -7,12 +7,17 @@ namespace ms {
 class Auton {
 public:
     /**
+     * @brief Default constructor (needed for std::vector)
+     */
+    Auton() : name(""), callback(nullptr) {}
+
+    /**
      * @brief Construct a new Auton
      *
      * @param name The name of the auton
      * @param callback The callback associated with the auton (the function that will be called when auton is selected)
      */
-    Auton(std::string name, const std::function<void()> &callback);
+    Auton(std::string name, const std::function<void()>& callback);
 
     /** @brief The name of the auton */
     std::string name;

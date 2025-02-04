@@ -1,5 +1,4 @@
-#include "pros/adi.hpp"
-#include "pros/rtos.hpp"
+#include "main.h"
 
 // Reusable function as this is used everytime I want to switch a piston
 void togglePistonState(bool& isExtended, pros::adi::DigitalOut& piston, int extendDelay, int retractDelay) {

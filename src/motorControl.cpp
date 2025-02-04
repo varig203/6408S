@@ -12,11 +12,6 @@ void motorControl_fn() { // Controls both Intake motors and drivetrain motors
         // Read controller inputs
         int intakeForward  = controller.get_digital(DIGITAL_R2);
         int intakeBackward = controller.get_digital(DIGITAL_R1);
-        int leftY          = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);  // Up and down on the left stick
-        int rightX         = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X); // Left and right on the right stick
-
-        // Drivetrain control
-        chassis.arcade(leftY, rightX);
 
         // If nothing is pressed = Reset
         if (!intakeForward && !intakeBackward) {
@@ -61,5 +56,15 @@ void motorControl_fn() { // Controls both Intake motors and drivetrain motors
 
         controller.clear_line(0); // Clears line in case the bot goes out of disabled
         pros::delay(20);
+    }
+}
+
+void chassis_fn() {
+    while (true) {
+        int leftY          = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);  // Up and down on the left stick
+        int rightX         = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X); // Left and right on the right stick
+
+        // Drivetrain control
+        chassis.arcade(leftY, rightX);
     }
 }

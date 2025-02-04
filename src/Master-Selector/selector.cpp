@@ -1,6 +1,5 @@
 #include "Master-Selector/selector.hpp"
-#include "liblvgl/extra/themes/default/lv_theme_default.h"
-#include "liblvgl/misc/lv_area.h"
+#include "main.h"
 
 // Global variables
 std::vector<ms::Category> auton_categories = {};
@@ -77,40 +76,46 @@ void ms::initialize(int autons_per_row) {
     bool dark_theme = true;
     const lv_font_t* font = &lv_font_montserrat_16;
 
-    lv_theme_t* theme = lv_theme_default_init(disp, primary_color, secondary_color, dark_theme, font);
+    lv_theme_default_init(disp, primary_color, secondary_color, dark_theme, font);
 
     // Create the tab view
     tabview = lv_tabview_create(lv_scr_act(), LV_DIR_TOP, 30);
 
     for (ms::Category& category : auton_categories) {
+        // Prepare the tab for the category
         lv_obj_t* category_tab = lv_tabview_add_tab(tabview, category.name.c_str());
         lv_obj_t* category_btnm = lv_btnmatrix_create(category_tab);
 
-        size_t num_autons = category.autons.size();
-        size_t auton_buttons_size = num_autons + num_autons / autons_per_row + 1;
-        const char** auton_buttons = new const char*[auton_buttons_size];
+        // Clear any previous data
+        category.auton_labels.clear();
+        category.auton_map.clear();
 
-        size_t i = 0, autonIndex = 0;
-        for (; i < auton_buttons_size - 1; i++) {
-            if (i != 0 && i % autons_per_row == 0) {
-                auton_buttons[i] = "\n"; // Line break
-            } else {
-                auton_buttons[i] = category.autons[autonIndex++].name.c_str();
+        // Fill auton_labels and auton_map
+        for (size_t i = 0; i < category.autons.size(); i++) {
+            // Save a copy of the auton name in auton_labels
+            category.auton_labels.push_back(category.autons[i].name);
+            // Store the pointer to the C-string
+            category.auton_map.push_back(category.auton_labels.back().c_str());
+
+            // Insert a line break after every autons_per_row items
+            if ((i + 1) % autons_per_row == 0) {
+                category.auton_map.push_back("\n");
             }
         }
+        // End the map with a NULL pointer as required by LVGL
+        category.auton_map.push_back(NULL);
 
-        auton_buttons[auton_buttons_size - 1] = NULL; // End of map
-
-        lv_btnmatrix_set_map(category_btnm, auton_buttons);
+        // Set the map for the button matrix
+        lv_btnmatrix_set_map(category_btnm, category.auton_map.data());
         lv_obj_add_event_cb(category_btnm, button_action, LV_EVENT_VALUE_CHANGED, NULL);
         lv_obj_set_size(category_btnm, 450, 50);
         lv_obj_align(category_btnm, LV_ALIGN_CENTER, 0, 0);
 
+        // Store references if needed elsewhere
         btnms.push_back(category_btnm);
         btnm_to_category[category_btnm] = &category;
-
-        delete[] auton_buttons;
     }
+
 
     pros::Task handle_tab_change_task(handle_tab_change);
 }

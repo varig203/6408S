@@ -1,6 +1,7 @@
 #include "robot/autonomous.hpp"
 #include "main.h"
 #include "robot/hardware.hpp"
+#include "robot/reuseFunc.hpp"
 
 /**
  * Runs the user autonomous code. This function will be started in its own task

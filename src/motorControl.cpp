@@ -25,7 +25,7 @@ void motorControl_fn() { // Controls both Intake motors and drivetrain motors
 
         // Intake buttons are pressed.
         // Check if the motor is stuck and trigger reversal if not already reversing.
-        if (!isReversing && (primary_intake.get_actual_velocity() == 0.1 || secondary_intake.get_actual_velocity() == 0.1) && (intakeForward || intakeBackward)) {
+        if (!isReversing && (primary_intake.get_actual_velocity() == 0 || secondary_intake.get_actual_velocity() == 0) && (intakeForward || intakeBackward)) {
             isReversing = true;
             reverseStartTime = pros::millis();
         }

@@ -3,6 +3,9 @@
 #include "robot/hardware.hpp"
 #include "robot/reuseFunc.hpp"
 
+// Assets
+ASSET(bFarSide_txt);
+
 /**
  * Runs the user autonomous code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -14,13 +17,15 @@
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-
 void rNear_side_awp() {}
 
 void rFar_side_awp() {}
 
 void bNear_side_awp() {}
 
-void bFar_side_awp() {}
+void bFar_side_awp() {
+    chassis.setPose(0, 0, 0); // reset pos
+    chassis.follow(bFarSide_txt, 20 , 2000); // 20 lookahead, 2s timeout
+}
 
 void skills() {}

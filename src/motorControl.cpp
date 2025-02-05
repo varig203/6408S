@@ -2,8 +2,9 @@
 #include "robot/hardware.hpp"
 
 void motorControl_fn() { // Controls both Intake motors and drivetrain motors
-    const uint32_t REVERSE_DURATION = 2000; // Reversal lasts 2000 ms (2 seconds)
+    const uint32_t REVERSE_DURATION = 500; // Reversal lasts 500 ms (0.5 seconds)
     const int INT_SPEED = 600;              // Default intake speed
+
     // State variables for reversal behavior
     bool isReversing = false;
     uint32_t reverseStartTime = 0;
@@ -21,9 +22,10 @@ void motorControl_fn() { // Controls both Intake motors and drivetrain motors
             pros::delay(20);
             continue;
         }
+
         // Intake buttons are pressed.
-        // Check if the motor is stuck (voltage == 0) and trigger reversal if not already reversing.
-        if (!isReversing && (primary_intake.get_voltage() == 0 || secondary_intake.get_voltage() == 0)) {
+        // Check if the motor is stuck and trigger reversal if not already reversing.
+        if (!isReversing && (primary_intake.get_actual_velocity() == 0.1 || secondary_intake.get_actual_velocity() == 0.1) && (intakeForward || intakeBackward)) {
             isReversing = true;
             reverseStartTime = pros::millis();
         }
@@ -55,7 +57,7 @@ void motorControl_fn() { // Controls both Intake motors and drivetrain motors
         }
 
         controller.clear_line(0); // Clears line in case the bot goes out of disabled
-        pros::delay(20);
+        //pros::delay(20);
     }
 }
 

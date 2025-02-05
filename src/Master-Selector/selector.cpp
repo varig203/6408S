@@ -1,5 +1,6 @@
 #include "Master-Selector/selector.hpp"
 #include "main.h"
+#include <cerrno>
 
 // Global variables
 std::vector<ms::Category> auton_categories = {};
@@ -71,10 +72,14 @@ void ms::initialize(int autons_per_row) {
     lv_disp_t* disp = lv_disp_get_default();
 
     // Define theme colors
-    lv_color_t primary_color = lv_color_hex(0x1E90FF);
-    lv_color_t secondary_color = lv_color_hex(0x32CD32);
-    bool dark_theme = true;
+    const lv_color_t primary_color = lv_color_hex(0x1E90FF);
+    const lv_color_t secondary_color = lv_color_hex(0x32CD32);
+    const bool dark_theme = true;
     const lv_font_t* font = &lv_font_montserrat_16;
+
+    if (!disp) {
+        printf("Error: No default display registered!\n");
+    }
 
     lv_theme_default_init(disp, primary_color, secondary_color, dark_theme, font);
 
@@ -116,6 +121,7 @@ void ms::initialize(int autons_per_row) {
         btnm_to_category[category_btnm] = &category;
     }
 
+    pros::delay(10);
 
     pros::Task handle_tab_change_task(handle_tab_change);
 }

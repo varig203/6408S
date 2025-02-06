@@ -1,20 +1,42 @@
 #include "main.h"
+#include "robodash/views/selector.hpp"
 #include "robot/hardware.hpp"
 #include "robot/autonomous.hpp"
 #include "robot/motorControl.hpp"
 #include "robot/solenoid.hpp"
+#include <optional>
 
-    rd::Selector autonSelector({  // Auton Selecton
-        {"Red Ring AWP", rFar_side_awp},
-        {"Red Goal AWP", rNear_side_awp},
-        {"Blue Ring AWP", bFar_side_awp},
-        {"Blue Goal AWP", bNear_side_awp},
-        {"Skills", skills}
-    });
+/**************************
+ *         TODO:          *
+ *  - FINISH AUTONOMOUS   *
+ *    - FINISH JOURNAL    *
+ *     - FINISH ROBOT     *
+ * - FIX POTENTIAL ISSUES *
+ **************************/
 
+rd::Selector autonSelector({  //  Initalize Auton Selecton
+    {"Red Ring AWP", rFar_side_awp},
+    {"Red Goal AWP", rNear_side_awp},
+    {"Blue Ring AWP", bFar_side_awp},
+    {"Blue Goal AWP", bNear_side_awp},
+    {"Skills", skills}
+});
+
+rd::Console console; // Initalize RD console
 // Runs initialization code when the program starts; all other competition modes are blocked, keep exec under few seconds
 void initialize() {
     chassis.calibrate(); // calibrate sensors
+
+    // Selector callback
+    autonSelector.on_select([](std::optional<rd::Selector::routine_t> routine) {
+        if (routine == std::nullopt) {
+            std::cout << "No routine selected" << std::endl;
+        } else {
+            std::cout << "Routine selected: " << routine.value().name << std::endl;
+        }
+    });
+
+    autonSelector.focus(); // COMMENT IN PROD
 }
 
 // Runs while the robot is disabled, following autonomous or opcontrol, and exits when the robot is enabled.
@@ -23,13 +45,13 @@ void disabled() {
     controller.rumble(".-.-.-.-");           // Non-verbal warning to driver
 }
 
-void autonomous() {
-    autonSelector.run_auton();
-}
-
 // Runs after initalize and before auton. only when connected to field control
 void competition_initialize() {
+    //autonSelector.focus(); // UNCOMMENT IN PROD
+}
 
+void autonomous() {
+    autonSelector.run_auton();
 }
 
 // Runs the operator control code in its own task when the robot is enabled, stops if disabled or comms lost.

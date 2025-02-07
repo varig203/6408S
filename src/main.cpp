@@ -22,21 +22,22 @@ rd::Selector autonSelector({  //  Initalize Auton Selecton
     {"Skills", skills}
 });
 
-rd::Console console; // Initalize RD console
+//rd::Console console; // Initalize RD console
+
 // Runs initialization code when the program starts; all other competition modes are blocked, keep exec under few seconds
 void initialize() {
     chassis.calibrate(); // calibrate sensors
 
     // Selector callback
-    autonSelector.on_select([](std::optional<rd::Selector::routine_t> routine) {
-        if (routine == std::nullopt) {
-            std::cout << "No routine selected" << std::endl;
-        } else {
-            std::cout << "Routine selected: " << routine.value().name << std::endl;
-        }
-    });
+    // autonSelector.on_select([](std::optional<rd::Selector::routine_t> routine) {
+    //     if (routine == std::nullopt) {
+    //         std::cout << "No routine selected" << std::endl;
+    //     } else {
+    //         std::cout << "Routine selected: " << routine.value().name << std::endl;
+    //     }
+    // });
 
-    autonSelector.focus(); // COMMENT IN PROD
+    //autonSelector.focus(); // COMMENT IN PROD
 }
 
 // Runs while the robot is disabled, following autonomous or opcontrol, and exits when the robot is enabled.
@@ -51,7 +52,7 @@ void competition_initialize() {
 }
 
 void autonomous() {
-    autonSelector.run_auton();
+    //autonSelector.run_auton();
 }
 
 // Runs the operator control code in its own task when the robot is enabled, stops if disabled or comms lost.

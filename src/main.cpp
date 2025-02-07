@@ -37,7 +37,7 @@ void initialize() {
     //     }
     // });
 
-    //autonSelector.focus(); // COMMENT IN PROD
+    autonSelector.focus(); // COMMENT IN PROD
 }
 
 // Runs while the robot is disabled, following autonomous or opcontrol, and exits when the robot is enabled.
@@ -52,7 +52,7 @@ void competition_initialize() {
 }
 
 void autonomous() {
-    //autonSelector.run_auton();
+    autonSelector.run_auton();
 }
 
 // Runs the operator control code in its own task when the robot is enabled, stops if disabled or comms lost.

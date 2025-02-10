@@ -57,7 +57,7 @@ void motorControl_fn() { // Controls both Intake motors and drivetrain motors
         }
 
         controller.clear_line(0); // Clears line in case the bot goes out of disabled
-        //pros::delay(20);
+        pros::delay(20);
     }
 }
 
@@ -68,5 +68,6 @@ void chassis_fn() {
 
         // Drivetrain control
         chassis.arcade(leftY, rightX);
+        pros::delay(20);
     }
 }

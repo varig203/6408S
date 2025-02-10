@@ -22,20 +22,19 @@ rd::Selector autonSelector({  //  Initalize Auton Selecton
     {"Skills", skills}
 });
 
-//rd::Console console; // Initalize RD console
+rd::Console console; // Initalize RD console
+
+void brainDebug() {
+    while (true) {
+        console.printf("HEADING: ", imu.get_heading());
+        console.printf("Y: ", vertical_encoder.get_position());
+    }
+}
+
 
 // Runs initialization code when the program starts; all other competition modes are blocked, keep exec under few seconds
 void initialize() {
     chassis.calibrate(); // calibrate sensors
-
-    // Selector callback
-    // autonSelector.on_select([](std::optional<rd::Selector::routine_t> routine) {
-    //     if (routine == std::nullopt) {
-    //         std::cout << "No routine selected" << std::endl;
-    //     } else {
-    //         std::cout << "Routine selected: " << routine.value().name << std::endl;
-    //     }
-    // });
 
     autonSelector.focus(); // COMMENT IN PROD
 }

@@ -4,12 +4,10 @@
 #include "robot/autonomous.hpp"
 #include "robot/motorControl.hpp"
 #include "robot/solenoid.hpp"
-#include <optional>
 
 /**************************
  *         TODO:          *
  *  - FINISH AUTONOMOUS   *
- *    - FINISH JOURNAL    *
  *     - FINISH ROBOT     *
  * - FIX POTENTIAL ISSUES *
  **************************/
@@ -24,19 +22,11 @@ rd::Selector autonSelector({  //  Initalize Auton Selecton
 
 rd::Console console; // Initalize RD console
 
-void brainDebug() {
-    while (true) {
-        console.printf("HEADING: ", imu.get_heading());
-        console.printf("Y: ", vertical_encoder.get_position());
-    }
-}
-
-
 // Runs initialization code when the program starts; all other competition modes are blocked, keep exec under few seconds
 void initialize() {
     chassis.calibrate(); // calibrate sensors
 
-    autonSelector.focus(); // COMMENT IN PROD
+    autonSelector.focus();
 }
 
 // Runs while the robot is disabled, following autonomous or opcontrol, and exits when the robot is enabled.
@@ -46,9 +36,7 @@ void disabled() {
 }
 
 // Runs after initalize and before auton. only when connected to field control
-void competition_initialize() {
-    //autonSelector.focus(); // UNCOMMENT IN PROD
-}
+void competition_initialize() {}
 
 void autonomous() {
     autonSelector.run_auton();

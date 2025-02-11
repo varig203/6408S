@@ -2,6 +2,7 @@
 #define HARDWARE_HPP
 
 #include "lemlib/api.hpp" // IWYU pragma: keep
+#include "lemlib/chassis/trackingWheel.hpp"
 #include "pros/adi.hpp"
 #include "pros/misc.hpp"
 
@@ -19,7 +20,9 @@ extern pros::adi::DigitalOut pistonLB;
 // Sensors
 extern pros::Imu             imu;
 extern pros::Rotation        vertical_encoder;
+extern pros::Rotation        horizontal_encoder;
 extern lemlib::TrackingWheel vertical_tracking_wheel;
+extern lemlib::TrackingWheel horizontal_tracking_wheel;
 
 // Drivetrain settings
 extern lemlib::Drivetrain  drivetrain;

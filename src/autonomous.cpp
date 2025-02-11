@@ -24,7 +24,7 @@ void rFar_side_awp() {}
 void bNear_side_awp() {}
 
 void bFar_side_awp() {
-    chassis.setPose(0, 0, 0); // reset pos
+    chassis.setPose(58.409, 37.612, 75); // Seting pos for pure pursuit
     chassis.follow(bFarSide_txt, 20 , 2000); // 20 lookahead, 2s timeout
 }
 

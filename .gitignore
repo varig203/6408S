@@ -17,3 +17,6 @@ temp.errors
 .d/
 .editorconfig
 .gitattributes
+
+# Private things
+static/

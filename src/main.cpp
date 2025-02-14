@@ -39,6 +39,8 @@ void disabled() {
 void competition_initialize() {}
 
 void autonomous() {
+    left_motors.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
+    right_motors.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
     autonSelector.run_auton();
 }
 

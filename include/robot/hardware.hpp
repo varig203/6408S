@@ -16,6 +16,7 @@ extern pros::Motor      secondary_intake;
 extern pros::Controller      controller;
 extern pros::adi::DigitalOut pistonMogo;
 extern pros::adi::DigitalOut pistonLB;
+extern pros::adi::DigitalOut pistonDoink;
 
 // Sensors
 extern pros::Imu             imu;

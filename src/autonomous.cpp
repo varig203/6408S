@@ -21,18 +21,42 @@ ASSET(Goal_txt);
 // piston vars
 bool mogoErection = false;
 
-void rNear_side_awp() {}
+void rNear_side_awp() {
+    right_motors.move_velocity(-300);
+    left_motors.move_velocity(-300);
+    pros::delay(2000);
+    left_motors.move_velocity(0);
+    right_motors.move_velocity(0);
+}
 
-void rFar_side_awp() {}
+void rFar_side_awp() {
+    right_motors.move_velocity(-300);
+    left_motors.move_velocity(-300);
+    pros::delay(2000);
+    left_motors.move_velocity(0);
+    right_motors.move_velocity(0);
+}
 
-void bNear_side_awp() {}
+void bNear_side_awp() {
+    right_motors.move_velocity(-300);
+    left_motors.move_velocity(-300);
+    pros::delay(2000);
+    left_motors.move_velocity(0);
+    right_motors.move_velocity(0);
+}
 
 void bFar_side_awp() {
-    chassis.setPose(0, 0, 0); // Seting pos for pure pursuit
-    chassis.follow(Goal_txt, 20, 2000, false);
-    togglePistonState(mogoErection, pistonMogo, 100, 75);
-    mogoErection = !mogoErection;
+    right_motors.move_velocity(-300);
+    left_motors.move_velocity(-300);
+    pros::delay(2000);
+    left_motors.move_velocity(0);
+    right_motors.move_velocity(0);
 }
 
 void skills() {
+    right_motors.move_velocity(-300);
+    left_motors.move_velocity(-300);
+    pros::delay(2000);
+    left_motors.move_velocity(0);
+    right_motors.move_velocity(0);
 }

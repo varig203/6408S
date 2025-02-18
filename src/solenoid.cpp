@@ -6,7 +6,7 @@
 
 void solenoidControl_fn() { // Controls all the solenoids on the robot in a single task
     // Initializing vars
-    bool isExtendedMogo       = false; // State variable to track piston status
+    bool isExtendedMogo       = true; // State variable to track piston status
     bool isExtendedLB         = false; // Lady brown mech
     bool isExtendedDoink      = false; // Doinker
     int  lastButtonStateMogo  = 0;     // To track the last button state Intake
@@ -14,7 +14,7 @@ void solenoidControl_fn() { // Controls all the solenoids on the robot in a sing
     int  lastButtonStateDoink = 0;     // doinker
 
     while (true) {
-        int currentButtonStateMogo  = controller.get_digital_new_press(DIGITAL_L1); // Mogo mech
+        int currentButtonStateMogo  = controller.get_digital(DIGITAL_L1); // Mogo mech
         int currentButtonStateLB    = controller.get_digital_new_press(DIGITAL_L2); //  LB Mech
         int currentButtonStateDoink = controller.get_digital_new_press(DIGITAL_A);
 
